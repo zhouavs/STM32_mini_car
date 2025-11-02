@@ -37,19 +37,31 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
+# 自定义 src 目录变量
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
-# Add sources to executable
+# 自动收集 src 目录下所有 C 文件
+file(GLOB_RECURSE ALL_C_SOURCES "${SRC_DIR}/*.c")
+
+# 添加到目标
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
+    ${ALL_C_SOURCES}
 )
 
-# Add include paths
+# 自动递归查找 src 目录下所有文件夹
+file(GLOB_RECURSE ALL_INCLUDE_DIRS LIST_DIRECTORIES true "${SRC_DIR}/*")
+
+# 只保留文件夹路径（去重）
+list(REMOVE_DUPLICATES ALL_INCLUDE_DIRS)
+
+# 添加所有文件夹为 include 路径
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
+    ${ALL_INCLUDE_DIRS}
 )
 
 # Add project symbols (macros)
