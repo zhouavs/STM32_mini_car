@@ -32,4 +32,4 @@ typedef struct Device_GPIO_ops {
 
 errno_t Device_GPIO_module_init(void);
 errno_t Device_GPIO_register(const Device_GPIO *const pd);
-errno_t Device_GPIO_find(Device_GPIO *pd, const Device_GPIO_name name);
+errno_t Device_GPIO_find(Device_GPIO **pd_ptr, const Device_GPIO_name name);

@@ -1,6 +1,6 @@
 #include "device/gpio/gpio.h"
 #include "driver/gpio/gpio.h"
-#include "stm32f4xx_hal_gpio.h"
+#include "stm32f4xx_hal.h"
 #include <stdint.h>
 
 static Device_GPIO devices[] = {

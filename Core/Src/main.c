@@ -55,7 +55,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void gpio_test(void);
 /* USER CODE END 0 */
 
 /**
@@ -88,7 +88,7 @@ int main(void)
   MX_GPIO_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-
+  gpio_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -1,7 +1,7 @@
 #include "list.h"
 #include <stdlib.h>
 
-static errno_t list_head_insert(List *list, void *value);
+static errno_t list_head_insert(List *list, const void *value);
 static errno_t list_find(List *list, void *return_value_ptr, void *ctx, List_item_match *match);
 
 static const struct List_ops ops = {
@@ -22,12 +22,13 @@ errno_t list_create(List **new_list_ptr) {
   return ESUCCESS;
 }
 
-static errno_t list_head_insert(List *list, void *value) {
+static errno_t list_head_insert(List *list, const void *value) {
   if (list == NULL) return EINVAL;
 
   List_node *pnode = (List_node *)malloc(sizeof(List_node));
   if (pnode == NULL) return ENOMEM;
-  pnode->value = value;
+  // Store the pointer; list does not mutate the pointee
+  pnode->value = (void *)value;
   pnode->next = NULL;
 
   if (list->head == NULL) {

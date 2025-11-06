@@ -15,10 +15,16 @@ errno_t Device_GPIO_module_init(void) {
 
 errno_t Device_GPIO_register(const Device_GPIO *const pd) {
   if (pd == NULL || list == NULL) return EINVAL;
-  return list->ops->head_insert(list, pd);
+  return list->ops->head_insert(list, (const void *)pd);
 }
 
-errno_t Device_GPIO_find(Device_GPIO *pd, Device_GPIO_name name) {
+errno_t Device_GPIO_find(Device_GPIO **pd_ptr, Device_GPIO_name name) {
   if (list == NULL || name == DEVICE_GPIO_NO_NAME) return EINVAL;
-  return list->ops->find(list, &pd, &name, _match_device);
+
+  Device_GPIO *find_pd = NULL;
+  errno_t err = list->ops->find(list, &find_pd, &name, _match_device);
+  if (err) return err;
+
+  *pd_ptr = find_pd;
+  return ESUCCESS;
 }

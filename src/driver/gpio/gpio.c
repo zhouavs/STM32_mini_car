@@ -1,6 +1,8 @@
 #include "gpio.h"
 #include <stdlib.h>
-#include "stm32f4xx_hal_gpio.h"
+// Use the HAL umbrella header to ensure all required types (e.g., HAL_StatusTypeDef)
+// and module headers are brought in with the correct order via stm32f4xx_hal_conf.h
+#include "stm32f4xx_hal.h"
 
 static errno_t Read(const Device_GPIO *const pd, Device_GPIO_value *value_ptr);
 static errno_t Write(const Device_GPIO *const pd, const Device_GPIO_value value);
