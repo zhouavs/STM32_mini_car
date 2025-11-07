@@ -52,7 +52,7 @@ errno_t Device_config_GPIO_register_all_device(void) {
 
   size_t device_cnt = sizeof(devices) / sizeof(Device_GPIO);
   for (size_t i = 0; i < device_cnt; ++i) {
-    err = Driver_GPIO_init(&devices[i]);
+    // err = Driver_GPIO_init(&devices[i]);
     if (err) return err;
     err = Device_GPIO_register(&devices[i]);
     if (err) return err;
