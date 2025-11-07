@@ -1,11 +1,11 @@
 #include "ring_buffer.h"
 #include <string.h>
 
-static errno_t write(Ring_buffer *prb, uint8_t *data, uint32_t len);
+static errno_t write(Ring_buffer *prb, const uint8_t *data, uint32_t len);
 static errno_t read(Ring_buffer *prb, uint8_t *data, uint32_t *data_len, uint32_t len);
 static errno_t clear(Ring_buffer *prb);
 
-static inline uint32_t get_ring_buffer_end(Ring_buffer *prb);
+static inline uint32_t get_ring_buffer_tail(Ring_buffer *prb);
 
 static const Ring_buffer_ops ops = {
   .write = write,
@@ -13,23 +13,24 @@ static const Ring_buffer_ops ops = {
   .clear = clear,
 };
 
-static errno_t write(Ring_buffer *prb, uint8_t *data, uint32_t len) {
+static errno_t write(Ring_buffer *prb, const uint8_t *data, uint32_t len) {
   if (prb == NULL || data == NULL) return EINVAL;
   if (len > prb->size - prb->len) return E_CUSTOM_RING_BUFFER_NO_MEMORY;
 
   if (len == 0) return ESUCCESS;
 
-  const uint32_t end = get_ring_buffer_end(prb);
+  const uint32_t tail = get_ring_buffer_tail(prb);
 
-  if (prb->begin > end) {
-    memcpy(prb->head + end, data, len);
+  if (prb->head > tail) {
+    memcpy(prb->data + tail, data, len);
   } else {
-    uint32_t end_2_tail_size = prb->size - end;
-    if (len <= end_2_tail_size) {
-      memcpy(prb->head + end, data, len);
+    uint32_t tail_free_size = prb->size - tail;
+
+    if (len <= tail_free_size) {
+      memcpy(prb->data + tail, data, len);
     } else {
-      memcpy(prb->head + end, data, end_2_tail_size);
-      memcpy(prb->head, data + end_2_tail_size, len - end_2_tail_size);
+      memcpy(prb->data + tail, data, tail_free_size);
+      memcpy(prb->data, data + tail_free_size, len - tail_free_size);
     }
   }
 
@@ -49,21 +50,21 @@ static errno_t read(Ring_buffer *prb, uint8_t *data, uint32_t *data_len, uint32_
     return ESUCCESS;
   }
 
-  const uint32_t end = get_ring_buffer_end(prb);
+  const uint32_t tail = get_ring_buffer_tail(prb);
 
-  if (prb->begin < end) {
-    memcpy(data, prb->head + prb->begin, len);
-    prb->begin += len;
+  if (prb->head < tail) {
+    memcpy(data, prb->data + prb->head, len);
+    prb->head += len;
   } else {
-    uint32_t begin_2_tail_size = prb->size - prb->begin;
+    uint32_t tail_data_size = prb->size - prb->head;
 
-    if (len <= begin_2_tail_size) {
-      memcpy(data, prb->head + prb->begin, len);
-      prb->begin += len;
+    if (len <= tail_data_size) {
+      memcpy(data, prb->data + prb->head, len);
+      prb->head += len;
     } else {
-      memcpy(data, prb->head + prb->begin, begin_2_tail_size);
-      memcpy(data + begin_2_tail_size, prb->head, len - begin_2_tail_size);
-      prb->begin = 0 + (len - begin_2_tail_size);
+      memcpy(data, prb->data + prb->head, tail_data_size);
+      memcpy(data + tail_data_size, prb->data, len - tail_data_size);
+      prb->head = len - tail_data_size;
     }
   }
 
@@ -76,26 +77,26 @@ static errno_t read(Ring_buffer *prb, uint8_t *data, uint32_t *data_len, uint32_
 static errno_t clear(Ring_buffer *prb) {
   if (prb == NULL) return EINVAL;
 
-  prb->begin = 0;
+  prb->head = 0;
   prb->len = 0;
 
   return ESUCCESS;
 }
 
 errno_t Ring_buffer_create(Ring_buffer **new_prb_ptr, uint32_t size) {
-  if (new_prb_ptr == NULL) return EINVAL;
+  if (new_prb_ptr == NULL || size == 0) return EINVAL;
 
   Ring_buffer *const prb = (Ring_buffer *)malloc(sizeof(Ring_buffer));
   if (prb == NULL) return ENOMEM;
 
-  prb->head = (uint8_t *)malloc(size);
-  if (prb->head == NULL) {
+  prb->data = (uint8_t *)malloc(size);
+  if (prb->data == NULL) {
     free(prb);
     return ENOMEM;
   }
 
   prb->size = size;
-  prb->begin = 0;
+  prb->head = 0;
   prb->len = 0;
   prb->ops = &ops;
 
@@ -106,13 +107,13 @@ errno_t Ring_buffer_create(Ring_buffer **new_prb_ptr, uint32_t size) {
 
 errno_t Ring_buffer_delete(Ring_buffer *del_prb) {
   if (del_prb == NULL) return EINVAL;
-  if (del_prb->head != NULL) free(del_prb->head);
+  if (del_prb->data != NULL) free(del_prb->data);
   free(del_prb);
   return ESUCCESS;
 }
 
-static inline uint32_t get_ring_buffer_end(Ring_buffer *prb) {
-  uint32_t end = prb->begin + prb->len;
+static inline uint32_t get_ring_buffer_tail(Ring_buffer *prb) {
+  uint32_t end = prb->head + prb->len;
   if (end >= prb->size) end -= prb->size;
   return end;
 }
