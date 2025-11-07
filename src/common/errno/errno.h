@@ -156,8 +156,9 @@ typedef enum {
 
   /* 自定义错误 */
   /* common/list */
-  E_CUSTOM_ITEM_NOT_FOUND = 134, /* 列表中未找到对应元素 */
-  E_CUSTOM_HAS_INITED = 135, /* 已经初始化 */
+  E_CUSTOM_ITEM_NOT_FOUND, /* 列表中未找到对应元素 */
+  E_CUSTOM_HAS_INITED, /* 已经初始化 */
+  E_CUSTOM_RING_BUFFER_NO_MEMORY,
 } errno_t;
 
 #endif /* __ERRNO_H */
