@@ -1,13 +1,14 @@
 #include "gpio.h"
 #include <stdlib.h>
 #include "common/list/list.h"
+#include "common/ring_buffer/ring_buffer.h"
 #include "driver/gpio/gpio.h"
 
 static errno_t init(const Device_GPIO *const pd);
 static errno_t read(const Device_GPIO *const pd, Device_GPIO_value *value_ptr);
 static errno_t write(const Device_GPIO *const pd, const Device_GPIO_value value);
 
-static inline uint8_t match_device(void *name, void *pd);
+static inline uint8_t match_device_by_name(void *name, void *pd);
 
 static const Device_GPIO_ops device_ops = {
   .init = init,
@@ -17,6 +18,7 @@ static const Device_GPIO_ops device_ops = {
 
 static const Driver_GPIO_ops *driver_ops = NULL;
 static List *list = NULL;
+static Ring_buffer *ring_buffer = NULL;
 
 errno_t Device_GPIO_module_init(void) {
   if (list != NULL) return E_CUSTOM_HAS_INITED;
@@ -25,6 +27,9 @@ errno_t Device_GPIO_module_init(void) {
   if (err) return err;
 
   err = list_create(&list);
+  if (err) return err;
+
+  err = Ring_buffer_create(&ring_buffer, 10);
   if (err) return err;
 
   return ESUCCESS;
@@ -40,10 +45,14 @@ errno_t Device_GPIO_find(Device_GPIO **pd_ptr, Device_GPIO_name name) {
   if (list == NULL || name == DEVICE_GPIO_NO_NAME) return EINVAL;
 
   Device_GPIO *find_pd = NULL;
-  errno_t err = list->ops->find(list, &find_pd, &name, match_device);
+  errno_t err = list->ops->find(list, &find_pd, &name, match_device_by_name);
   if (err) return err;
 
   *pd_ptr = find_pd;
+  return ESUCCESS;
+}
+
+errno_t Device_GPIO_EXTI_callback(Device_GPIO *pd) {
   return ESUCCESS;
 }
 
@@ -63,6 +72,6 @@ static errno_t write(const Device_GPIO *const pd, const Device_GPIO_value value)
   return driver_ops->write(pd, value);
 }
 
-static inline uint8_t match_device(void *name, void *pd) {
+static inline uint8_t match_device_by_name(void *name, void *pd) {
   return ((Device_GPIO *)pd)->name == *((Device_GPIO_name *)name);
 }

@@ -5,8 +5,8 @@
 
 typedef enum Device_GPIO_name {
   DEVICE_GPIO_NO_NAME,
-  LED_1, LED_2, LED_3, LED_4,
-  KEY_1, KEY_2, KEY_3, KEY_4,
+  DEVICE_LED_1, DEVICE_LED_2, DEVICE_LED_3, DEVICE_LED_4,
+  DEVICE_KEY_1, DEVICE_KEY_2, DEVICE_KEY_3, DEVICE_KEY_4,
 } Device_GPIO_name;
 
 typedef enum Device_GPIO_value {
@@ -38,3 +38,5 @@ typedef struct Driver_GPIO_ops {
 errno_t Device_GPIO_module_init(void);
 errno_t Device_GPIO_register(Device_GPIO *const pd);
 errno_t Device_GPIO_find(Device_GPIO **pd_ptr, const Device_GPIO_name name);
+
+errno_t Device_GPIO_EXTI_callback(Device_GPIO *pd);

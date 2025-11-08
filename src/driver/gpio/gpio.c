@@ -28,7 +28,3 @@ errno_t Driver_GPIO_get_ops(const Driver_GPIO_ops **po_ptr) {
   *po_ptr = &ops;
   return ESUCCESS;
 }
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  
-}
