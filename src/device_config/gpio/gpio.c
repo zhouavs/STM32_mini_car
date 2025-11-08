@@ -65,22 +65,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {
     case GPIO_PIN_0: {
       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_1]);
-      Device_keyboard_EXTI_callback(DEVICE_KEY_1);
+      Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_1]);
       break;
     }
     case GPIO_PIN_1: {
       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_2]);
-      Device_keyboard_EXTI_callback(DEVICE_KEY_2);
+      Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_2]);
       break;
     }
     case GPIO_PIN_2: {
       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_3]);
-      Device_keyboard_EXTI_callback(DEVICE_KEY_3);
+      Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_3]);
       break;
     }
     case GPIO_PIN_3: {
       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_4]);
-      Device_keyboard_EXTI_callback(DEVICE_KEY_4);
+      Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_4]);
       break;
     }
     default: {

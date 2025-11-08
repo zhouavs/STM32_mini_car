@@ -22,9 +22,17 @@ errno_t Device_keyboard_get_device(const Device_keyboard **pd_ptr) {
   return ESUCCESS;
 }
 
-errno_t Device_keyboard_EXTI_callback(Device_GPIO_name key_name) {
-  if (key_name == DEVICE_GPIO_NO_NAME || ring_buffer == NULL) return EINVAL;
-  ring_buffer->ops->write(ring_buffer, (uint8_t *)&key_name, 1);
+errno_t Device_keyboard_EXTI_callback(const Device_GPIO *const pd) {
+  if (pd == NULL || ring_buffer == NULL) return EINVAL;
+
+  Device_GPIO_value value = DEVICE_GPIO_PIN_RESET;
+  errno_t err = pd->ops->read(pd, &value);
+  if (err) return err;
+  if (value == DEVICE_GPIO_PIN_SET) return ESUCCESS;
+
+  err = ring_buffer->ops->write(ring_buffer, (uint8_t *)&pd->name, 1);
+  if (err) return err;
+
   return ESUCCESS;
 }
 

@@ -16,4 +16,4 @@ typedef struct Device_keyboard_ops {
 
 errno_t Device_keyboard_module_init(void);
 errno_t Device_keyboard_get_device(const Device_keyboard **pd_ptr);
-errno_t Device_keyboard_EXTI_callback(Device_GPIO_name key_name);
+errno_t Device_keyboard_EXTI_callback(const Device_GPIO *const pd);
