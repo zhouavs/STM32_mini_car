@@ -11,6 +11,7 @@ target_compile_options(user_src PRIVATE -fshort-enums)
 # 添加所有文件夹为 include 路径
 target_include_directories(user_src PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}
 )
 
 target_link_libraries(user_src PRIVATE stm32cubemx)

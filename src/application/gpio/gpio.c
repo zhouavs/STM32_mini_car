@@ -30,7 +30,7 @@ void gpio_test(void) {
   if (err) return;
 
   while (1) {
-    Device_GPIO_name key_name = DEVICE_GPIO_NO_NAME;
+    Device_GPIO_name key_name;
     err = keyboard->ops->read(&key_name);
     if (err) continue;
 

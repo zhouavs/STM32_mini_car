@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 typedef enum Device_GPIO_name {
-  DEVICE_GPIO_NO_NAME,
   DEVICE_LED_1, DEVICE_LED_2, DEVICE_LED_3, DEVICE_LED_4,
   DEVICE_KEY_1, DEVICE_KEY_2, DEVICE_KEY_3, DEVICE_KEY_4,
+  DEVICE_GPIO_COUNT,
 } Device_GPIO_name;
 
 typedef enum Device_GPIO_value {

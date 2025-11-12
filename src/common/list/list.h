@@ -15,13 +15,13 @@ typedef struct List {
   const struct List_ops *ops;
 } List;
 
-typedef uint8_t List_item_match(void *ctx, void *value);
+typedef uint8_t List_item_match(const void *const ctx, const void *const value);
 
 struct List_ops {
   // Accept const value pointers for insertion; the list will not modify the value
   // and simply stores the pointer. Callers retain ownership/lifetime management.
   errno_t (*head_insert)(List *list, const void *value);
-  errno_t (*find)(List *list, void *return_value_ptr, void *ctx, List_item_match *match);
+  errno_t (*find)(const List *list, void *return_value_ptr, const void *const ctx, List_item_match *const match);
 };
 
 errno_t list_create(List **new_list_ptr);

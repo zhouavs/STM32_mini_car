@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 static errno_t list_head_insert(List *list, const void *value);
-static errno_t list_find(List *list, void *return_value_ptr, void *ctx, List_item_match *match);
+static errno_t list_find(const List *list, void *return_value_ptr, const void *const ctx, List_item_match *const match);
 
 static const struct List_ops ops = {
   .head_insert = list_head_insert,
@@ -41,7 +41,7 @@ static errno_t list_head_insert(List *list, const void *value) {
   return ESUCCESS;
 }
 
-static errno_t list_find(List *list, void *return_value_ptr, void *ctx, List_item_match *match) {
+static errno_t list_find(const List *list, void *return_value_ptr, const void *const ctx, List_item_match *const match) {
   if (list == NULL || return_value_ptr == NULL || match == NULL) return EINVAL;
 
   List_node *pn = list->head;
