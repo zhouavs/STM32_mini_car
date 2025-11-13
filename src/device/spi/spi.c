@@ -4,6 +4,8 @@
 #include "driver/spi/spi.h"
 #include <stdlib.h>
 
+#define MAX_MSG_LEN 0xFF
+
 static errno_t init(Device_SPI *pd);
 static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t *data_len, uint32_t len);
 static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len);
@@ -18,8 +20,7 @@ static const Device_SPI_ops device_ops = {
 
 static List *list = NULL;
 static const Driver_SPI_ops *driver_ops = NULL;
-static Ring_buffer *ring_buffers[DEVICE_SPI_COUNT] = {0};
-static volatile uint8_t rx_bytes[DEVICE_SPI_COUNT] = {0};
+static volatile uint8_t receiving[DEVICE_SPI_COUNT] = {0};
 static volatile uint8_t transmitting[DEVICE_SPI_COUNT] = {0};
 
 errno_t Device_SPI_module_init(void) {
@@ -53,11 +54,7 @@ errno_t Device_SPI_TxCpltCallback(Device_SPI *pd) {
 }
 
 errno_t Device_SPI_RxCpltCallback(Device_SPI *pd) {
-  Ring_buffer *prb = ring_buffers[pd->name];
-  errno_t err = prb->ops->write(prb, (uint8_t *)&rx_bytes[pd->name], 1);
-  if (err) return err;
-  err = driver_ops->receive_DMA(pd, (uint8_t *)&rx_bytes[pd->name], 1);
-  if (err) return err;
+  receiving[pd->name] = 0;
   return ESUCCESS;
 }
 
@@ -68,36 +65,55 @@ static inline uint8_t match_device_by_name(const void *const name, const void *c
 static errno_t init(Device_SPI *pd) {
   if (pd == NULL) return EINVAL;
 
-  errno_t err = ESUCCESS;
-
-  if (ring_buffers[pd->name] == NULL) {
-    Ring_buffer *rb = NULL;
-    err = Ring_buffer_create(&rb, 255);
-    if (err) return err;
-    ring_buffers[pd->name] = rb;
-  }
-
-  err = driver_ops->abort_receive(pd);
-  if (err) return err;
-  err = driver_ops->receive_DMA(pd, (uint8_t *)&rx_bytes[pd->name], 1);
-  if (err) return err;
-
   return ESUCCESS;
 }
 
 static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len) {
-  if (pd == NULL || data == NULL) return EINVAL;
-  errno_t err = ESUCCESS;
-  transmitting[pd->name] = 1;
-  err = driver_ops->transmit_DMA(pd, data, len);
-  if (err) return err;
-  while (transmitting[pd->name] == 1);
+  if (pd == NULL || data == NULL || len == 0) return EINVAL;
+
+  uint32_t cur_idx = 0;
+  uint32_t cur_len = 0;
+
+  do {
+    if (len > MAX_MSG_LEN) {
+      cur_len = MAX_MSG_LEN;
+      len -= MAX_MSG_LEN;
+    } else {
+      cur_len = len;
+      len = 0;
+    }
+
+    transmitting[pd->name] = 1;
+    driver_ops->transmit_DMA(pd, data + cur_idx, cur_len);
+    cur_idx += cur_len;
+
+    while (transmitting[pd->name]);
+  } while (len > 0);
+
   return ESUCCESS;
 }
 
 static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t *data_len, uint32_t len) {
-  if (pd == NULL || data == NULL || data_len == NULL) return EINVAL;
-  Ring_buffer *rb = ring_buffers[pd->name];
-  if (rb == NULL) return EINVAL;
-  return rb->ops->read(rb, data, data_len, len);
+  if (pd == NULL || data == NULL || data_len == NULL || len == 0) return EINVAL;
+
+  uint32_t cur_idx = 0;
+  uint32_t cur_len = 0;
+
+  do {
+    if (len > MAX_MSG_LEN) {
+      cur_len = MAX_MSG_LEN;
+      len -= MAX_MSG_LEN;
+    } else {
+      cur_len = len;
+      len = 0;
+    }
+
+    receiving[pd->name] = 1;
+    driver_ops->receive_DMA(pd, data + cur_idx, cur_len);
+    cur_idx += cur_len;
+
+    while (receiving[pd->name]);
+  } while (len > 0);
+
+  return ESUCCESS;
 }

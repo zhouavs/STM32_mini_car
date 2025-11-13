@@ -86,17 +86,17 @@ static errno_t init(Device_USART *pd) {
 }
 
 static errno_t transmit(Device_USART *pd, uint8_t *data, uint32_t len) {
-  if (pd == NULL || data == NULL) return EINVAL;
+  if (pd == NULL || data == NULL || len == 0) return EINVAL;
   errno_t err = ESUCCESS;
   transmitting[pd->name] = 1;
   err = driver_ops->transmit_IT(pd, data, len);
   if (err) return err;
-  while (transmitting[pd->name] == 1);
+  while (transmitting[pd->name]);
   return ESUCCESS;
 }
 
 static errno_t receive(Device_USART *pd, uint8_t *data, uint32_t *data_len, uint32_t len) {
-  if (pd == NULL || data == NULL || data_len == NULL) return EINVAL;
+  if (pd == NULL || data == NULL || data_len == NULL || len == 0) return EINVAL;
   Ring_buffer *rb = ring_buffers[pd->name];
   if (rb == NULL) return EINVAL;
   return rb->ops->read(rb, data, data_len, len);
