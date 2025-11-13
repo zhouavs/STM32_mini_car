@@ -28,8 +28,6 @@ typedef struct Driver_SPI_ops {
   errno_t (*transmit)(Device_SPI *pd, uint8_t *data, uint32_t len);
   errno_t (*receive_DMA)(Device_SPI *pd, uint8_t *data, uint32_t len);
   errno_t (*transmit_DMA)(Device_SPI *pd, uint8_t *data, uint32_t len);
-  errno_t (*abort_receive)(Device_SPI *pd);
-  errno_t (*abort_transmit)(Device_SPI *pd);
 } Driver_SPI_ops;
 
 errno_t Device_SPI_module_init(void);
