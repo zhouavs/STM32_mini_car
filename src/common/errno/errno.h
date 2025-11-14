@@ -158,7 +158,10 @@ typedef enum {
   /* common/list */
   E_CUSTOM_ITEM_NOT_FOUND, /* 列表中未找到对应元素 */
   E_CUSTOM_HAS_INITED, /* 已经初始化 */
-  E_CUSTOM_RING_BUFFER_NO_MEMORY,
+  E_CUSTOM_RING_BUFFER_NO_MEMORY, /* 环形缓冲区已满 */
+  E_CUSTOM_W25QX_ADDR_ERROR, /* W25QX 设备擦除扇区/块时传入的地址错误, 地址只能为扇区/块的首地址 */
+  E_CUSTOM_W25QX_OVERSTEP, /* W25QX 设备片写或擦除越界 */
+  E_CUSTOM_W25QX_DEVICE_ID_ERROR,
 } errno_t;
 
 #endif /* __ERRNO_H */

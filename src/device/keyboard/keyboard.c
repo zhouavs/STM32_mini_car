@@ -25,10 +25,10 @@ errno_t Device_keyboard_get_device(const Device_keyboard **pd_ptr) {
 errno_t Device_keyboard_EXTI_callback(const Device_GPIO *const pd) {
   if (pd == NULL || ring_buffer == NULL) return EINVAL;
 
-  Device_GPIO_value value = DEVICE_GPIO_PIN_RESET;
+  Pin_value value = PIN_VALUE_0;
   errno_t err = pd->ops->read(pd, &value);
   if (err) return err;
-  if (value == DEVICE_GPIO_PIN_SET) return ESUCCESS;
+  if (value == PIN_VALUE_1) return ESUCCESS;
 
   err = ring_buffer->ops->write(ring_buffer, (uint8_t *)&pd->name, 1);
   if (err) return err;

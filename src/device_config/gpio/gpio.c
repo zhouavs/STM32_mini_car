@@ -37,6 +37,10 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
     .port = GPIOA,
     .pin = GPIO_PIN_3,
   },
+  [DEVICE_W25Q64_CS]={
+    .port = GPIOA,
+    .pin = GPIO_PIN_15,
+  },
 };
 
 errno_t Device_config_GPIO_register_all_device(void) {

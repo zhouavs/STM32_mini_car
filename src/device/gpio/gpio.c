@@ -5,8 +5,8 @@
 #include "driver/gpio/gpio.h"
 
 static errno_t init(const Device_GPIO *const pd);
-static errno_t read(const Device_GPIO *const pd, Device_GPIO_value *value_ptr);
-static errno_t write(const Device_GPIO *const pd, const Device_GPIO_value value);
+static errno_t read(const Device_GPIO *const pd, Pin_value *value_ptr);
+static errno_t write(const Device_GPIO *const pd, const Pin_value value);
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
@@ -58,12 +58,12 @@ static errno_t init(const Device_GPIO *const pd) {
   return ESUCCESS;
 }
 
-static errno_t read(const Device_GPIO *const pd, Device_GPIO_value *value_ptr) {
+static errno_t read(const Device_GPIO *const pd, Pin_value *value_ptr) {
   if (pd == NULL) return EINVAL;
   return driver_ops->read(pd, value_ptr);
 }
 
-static errno_t write(const Device_GPIO *const pd, const Device_GPIO_value value) {
+static errno_t write(const Device_GPIO *const pd, const Pin_value value) {
   if (pd == NULL) return EINVAL;
   return driver_ops->write(pd, value);
 }

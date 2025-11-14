@@ -7,7 +7,7 @@
 #define MAX_MSG_LEN 0xFF
 
 static errno_t init(Device_SPI *pd);
-static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t *data_len, uint32_t len);
+static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t len);
 static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len);
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
@@ -93,8 +93,8 @@ static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len) {
   return ESUCCESS;
 }
 
-static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t *data_len, uint32_t len) {
-  if (pd == NULL || data == NULL || data_len == NULL || len == 0) return EINVAL;
+static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t len) {
+  if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;
   uint32_t cur_len = 0;

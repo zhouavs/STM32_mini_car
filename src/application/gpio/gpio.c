@@ -36,19 +36,19 @@ void gpio_test(void) {
 
     switch (key_name) {
       case DEVICE_KEY_1: {
-        leds[0]->ops->write(leds[0], DEVICE_GPIO_PIN_RESET);
+        leds[0]->ops->write(leds[0], PIN_VALUE_0);
         break;
       }
       case DEVICE_KEY_2: {
-        leds[1]->ops->write(leds[1], DEVICE_GPIO_PIN_RESET);
+        leds[1]->ops->write(leds[1], PIN_VALUE_0);
         break;
       }
       case DEVICE_KEY_3: {
-        leds[2]->ops->write(leds[2], DEVICE_GPIO_PIN_RESET);
+        leds[2]->ops->write(leds[2], PIN_VALUE_0);
         break;
       }
       case DEVICE_KEY_4: {
-        leds[3]->ops->write(leds[3], DEVICE_GPIO_PIN_RESET);
+        leds[3]->ops->write(leds[3], PIN_VALUE_0);
         break;
       }
       default: break;
@@ -57,7 +57,7 @@ void gpio_test(void) {
     delay_ms(1000);
 
     for (uint8_t i = 0; i < led_count; ++i) {
-      leds[i]->ops->write(leds[i], DEVICE_GPIO_PIN_SET);
+      leds[i]->ops->write(leds[i], PIN_VALUE_1);
     }
   }
 }
