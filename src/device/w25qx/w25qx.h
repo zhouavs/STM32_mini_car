@@ -21,10 +21,10 @@ typedef struct Device_W25QX {
 } Device_W25QX;
 
 typedef struct Device_W25QX_ops {
-  errno_t (*init)(Device_W25QX *pd);
-  errno_t (*erase)(Device_W25QX *pd, uint32_t addr, uint16_t sector_count);
-  errno_t (*read)(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len);
-  errno_t (*write)(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len);
+  errno_t (*init)(const Device_W25QX *const pd);
+  errno_t (*erase)(const Device_W25QX *const pd, uint32_t addr, uint16_t sector_count);
+  errno_t (*read)(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint32_t len);
+  errno_t (*write)(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint32_t len);
 } Device_W25QX_ops;
 
 // 全局方法

@@ -4,11 +4,11 @@
 #include "driver/spi/spi.h"
 #include <stdlib.h>
 
-#define MAX_MSG_LEN 0xFF
+#define MAX_MSG_LEN 0xFFFF
 
 static errno_t init(Device_SPI *pd);
-static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t len);
-static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len);
+static errno_t receive(Device_SPI *pd, uint8_t *data, uint16_t len);
+static errno_t transmit(Device_SPI *pd, uint8_t *data, uint16_t len);
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
@@ -68,7 +68,7 @@ static errno_t init(Device_SPI *pd) {
   return ESUCCESS;
 }
 
-static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len) {
+static errno_t transmit(Device_SPI *pd, uint8_t *data, uint16_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;
@@ -93,7 +93,7 @@ static errno_t transmit(Device_SPI *pd, uint8_t *data, uint32_t len) {
   return ESUCCESS;
 }
 
-static errno_t receive(Device_SPI *pd, uint8_t *data, uint32_t len) {
+static errno_t receive(Device_SPI *pd, uint8_t *data, uint16_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;

@@ -7,25 +7,25 @@
 #include "common/list/list.h"
 
 // 对象方法
-static errno_t init(Device_W25QX *pd);
-static errno_t erase(Device_W25QX *pd, uint32_t addr, uint16_t sector_count);
-static errno_t read(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len);
-static errno_t write(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len);
+static errno_t init(const Device_W25QX *const pd);
+static errno_t erase(const Device_W25QX *const pd, uint32_t addr, uint16_t sector_count);
+static errno_t read(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint32_t len);
+static errno_t write(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint32_t len);
 
 // 内部方法 - 查找设备
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 // 内部方法 - W25QX 操作
-static errno_t read_id(Device_W25QX *pd, uint32_t *id_ptr);
-static errno_t power_down(Device_W25QX *pd);
-static errno_t release_power_down(Device_W25QX *pd);
-static errno_t write_enable(Device_W25QX *pd);
-static errno_t write_disable(Device_W25QX *pd);
-static errno_t wait_write_complete(Device_W25QX *pd);
-static errno_t sector_erase(Device_W25QX *pd, uint32_t addr);
-static errno_t block_erase_32k(Device_W25QX *pd, uint32_t addr);
-static errno_t block_erase_64k(Device_W25QX *pd, uint32_t addr);
-static errno_t chip_erase(Device_W25QX *pd);
-static errno_t page_write(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint16_t len);
+static errno_t read_id(const Device_W25QX *const pd, uint32_t *id_ptr);
+static errno_t power_down(const Device_W25QX *const pd) __attribute__((unused));
+static errno_t release_power_down(const Device_W25QX *const pd) __attribute__((unused));
+static errno_t write_enable(const Device_W25QX *const pd);
+static errno_t write_disable(const Device_W25QX *const pd) __attribute__((unused));
+static errno_t wait_write_complete(const Device_W25QX *const pd);
+static errno_t sector_erase(const Device_W25QX *const pd, uint32_t addr);
+static errno_t block_erase_32k(const Device_W25QX *const pd, uint32_t addr) __attribute__((unused));
+static errno_t block_erase_64k(const Device_W25QX *const pd, uint32_t addr) __attribute__((unused));
+static errno_t chip_erase(const Device_W25QX *const pd) __attribute__((unused));
+static errno_t page_write(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint16_t len);
 // 内部方法 - 地址由整型转为字节数组
 static errno_t addr_to_bytes(uint32_t addr, uint8_t *bytes);
 
@@ -63,7 +63,7 @@ errno_t Device_W25QX_find(const Device_W25QX **pd_ptr, const Device_W25QX_name n
   return ESUCCESS;
 }
 
-static errno_t init(Device_W25QX *pd) {
+static errno_t init(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -77,7 +77,7 @@ static errno_t init(Device_W25QX *pd) {
   return ESUCCESS;
 }
 
-static errno_t erase(Device_W25QX *pd, uint32_t addr, uint16_t sector_count) {
+static errno_t erase(const Device_W25QX *const pd, uint32_t addr, uint16_t sector_count) {
   if (pd == NULL) return EINVAL;
   // 地址必须是扇区的起始地址
   if (addr % W25QX_SECTOR_SIZE != 0) return E_CUSTOM_W25QX_ADDR_ERROR;
@@ -93,10 +93,10 @@ static errno_t erase(Device_W25QX *pd, uint32_t addr, uint16_t sector_count) {
   return ESUCCESS;
 }
 
-static errno_t read(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len) {
+static errno_t read(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
   // 从 addr 开始的剩余字节数必须大于 len
-  if (W25QX_SECTOR_SIZE - addr < len) return E_CUSTOM_W25QX_OVERSTEP;
+  if (W25QX_SIZE - addr < len) return E_CUSTOM_W25QX_OVERSTEP;
 
   errno_t err = ESUCCESS;
 
@@ -120,10 +120,10 @@ static errno_t read(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len
   return err;
 }
 
-static errno_t write(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t len) {
+static errno_t write(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
   // 从 addr 开始的剩余字节数必须大于 len
-  if (W25QX_SECTOR_SIZE - addr < len) return E_CUSTOM_W25QX_OVERSTEP;
+  if (W25QX_SIZE - addr < len) return E_CUSTOM_W25QX_OVERSTEP;
 
   errno_t err = ESUCCESS;
 
@@ -140,7 +140,7 @@ static errno_t write(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t le
 
   // 分页写入
   // 获取第一页可以写入的字节数
-  const uint16_t first_page_remain = addr - (addr / W25QX_PAGE_SIZE);
+  const uint16_t first_page_remain = W25QX_PAGE_SIZE - (addr % W25QX_PAGE_SIZE);
   uint16_t cur_len = 0;
   if (len > first_page_remain) {
     cur_len = first_page_remain;
@@ -154,6 +154,7 @@ static errno_t write(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint32_t le
 
   while (len) {
     addr += cur_len;
+    data += cur_len;
     if (len > W25QX_PAGE_SIZE) {
       cur_len = W25QX_PAGE_SIZE;
       len -= W25QX_PAGE_SIZE;
@@ -173,7 +174,7 @@ static inline uint8_t match_device_by_name(const void *const name, const void *c
   return ((Device_GPIO *)pd)->name == *((Device_GPIO_name *)name);
 }
 
-static errno_t read_id(Device_W25QX *pd, uint32_t *id_ptr) {
+static errno_t read_id(const Device_W25QX *const pd, uint32_t *id_ptr) {
   if (pd == NULL || id_ptr == NULL) return EINVAL;
 
   uint8_t cmd = W25QX_CMD_JEDEC_ID;
@@ -200,7 +201,7 @@ static errno_t read_id(Device_W25QX *pd, uint32_t *id_ptr) {
   return err;
 }
 
-static errno_t power_down(Device_W25QX *pd) {
+static errno_t power_down(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   uint8_t cmd = W25QX_CMD_POWER_DOWN;
@@ -220,7 +221,7 @@ static errno_t power_down(Device_W25QX *pd) {
   return err;
 }
 
-static errno_t release_power_down(Device_W25QX *pd) {
+static errno_t release_power_down(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   uint8_t cmd = W25QX_CMD_RELEASE_POWER_DOWN;
@@ -240,7 +241,7 @@ static errno_t release_power_down(Device_W25QX *pd) {
   return err;
 }
 
-static errno_t write_enable(Device_W25QX *pd) {
+static errno_t write_enable(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   uint8_t cmd = W25QX_CMD_WRITE_ENABLE;
@@ -260,7 +261,7 @@ static errno_t write_enable(Device_W25QX *pd) {
   return err;
 }
 
-static errno_t write_disable(Device_W25QX *pd) {
+static errno_t write_disable(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   uint8_t cmd = W25QX_CMD_WRITE_DISABLE;
@@ -280,7 +281,7 @@ static errno_t write_disable(Device_W25QX *pd) {
   return err;
 }
 
-static errno_t wait_write_complete(Device_W25QX *pd) {
+static errno_t wait_write_complete(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   uint8_t cmd = W25QX_CMD_READ_STATUS_REGISTER_1;
@@ -308,7 +309,7 @@ static errno_t wait_write_complete(Device_W25QX *pd) {
   return err;
 }
 
-static errno_t sector_erase(Device_W25QX *pd, uint32_t addr) {
+static errno_t sector_erase(const Device_W25QX *const pd, uint32_t addr) {
   if (pd == NULL) return EINVAL;
   // 必须为扇区的起始地址
   if (addr % W25QX_SECTOR_SIZE != 0) return E_CUSTOM_W25QX_ADDR_ERROR;
@@ -336,7 +337,7 @@ static errno_t sector_erase(Device_W25QX *pd, uint32_t addr) {
   return err;
 }
 
-static errno_t block_erase_32k(Device_W25QX *pd, uint32_t addr) {
+static errno_t block_erase_32k(const Device_W25QX *const pd, uint32_t addr) {
   if (pd == NULL) return EINVAL;
   // 必须为 32k 空间的起始地址
   if (addr % 0x8000 != 0) return E_CUSTOM_W25QX_ADDR_ERROR;
@@ -364,7 +365,7 @@ static errno_t block_erase_32k(Device_W25QX *pd, uint32_t addr) {
   return err;
 }
 
-static errno_t block_erase_64k(Device_W25QX *pd, uint32_t addr) {
+static errno_t block_erase_64k(const Device_W25QX *const pd, uint32_t addr) {
   if (pd == NULL) return EINVAL;
   // 必须为 64k 空间的起始地址
   if (addr % 0x10000 != 0) return E_CUSTOM_W25QX_ADDR_ERROR;
@@ -392,7 +393,7 @@ static errno_t block_erase_64k(Device_W25QX *pd, uint32_t addr) {
   return err;
 }
 
-static errno_t chip_erase(Device_W25QX *pd) {
+static errno_t chip_erase(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -415,7 +416,7 @@ static errno_t chip_erase(Device_W25QX *pd) {
   return err;
 }
 
-static errno_t page_write(Device_W25QX *pd, uint32_t addr, uint8_t *data, uint16_t len) {
+static errno_t page_write(const Device_W25QX *const pd, uint32_t addr, uint8_t *data, uint16_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
   // 检查片写是否越界
   if (addr % 0x100 + len > 0x100) return E_CUSTOM_W25QX_OVERSTEP;
@@ -450,4 +451,5 @@ static errno_t addr_to_bytes(uint32_t addr, uint8_t *bytes) {
   bytes[0] = (addr & 0xFF0000) >> 16;
   bytes[1] = (addr & 0x00FF00) >> 8;
   bytes[2] = (addr & 0x0000FF);
+  return ESUCCESS;
 }

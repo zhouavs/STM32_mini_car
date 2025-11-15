@@ -26,8 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/gpio/gpio.h"
-#include "src/application/usart/usart.h"
+#include "src/application/w25qx/w25qx.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -97,7 +96,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  usart_test();
+  // w25q64_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

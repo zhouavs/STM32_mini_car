@@ -26,7 +26,7 @@ static errno_t receive(Device_USART *pd, uint8_t *data, uint32_t len) {
 }
 
 static errno_t transmit(Device_USART *pd, uint8_t *data, uint32_t len) {
-  if (pd == NULL || data == NULL || len == 0) return EINVAL;
+  if (pd == NULL || data == NULL || len == 0 || len > 0xFFFF) return EINVAL;
   HAL_StatusTypeDef status = HAL_UART_Transmit((UART_HandleTypeDef *)pd->channel, data, len, len * 10);
   return status == HAL_OK ? ESUCCESS : EIO;
 }
@@ -40,7 +40,7 @@ static errno_t receive_IT(Device_USART *pd, uint8_t *data, uint32_t len) {
 }
 
 static errno_t transmit_IT(Device_USART *pd, uint8_t *data, uint32_t len) {
-  if (pd == NULL || data == NULL || len == 0) return EINVAL;
+  if (pd == NULL || data == NULL || len == 0 || len > 0xFFFF) return EINVAL;
   HAL_StatusTypeDef status = HAL_UART_Transmit_IT((UART_HandleTypeDef *)pd->channel, data, len);
   if (status == HAL_OK) return ESUCCESS;
   if (status == HAL_BUSY) return EBUSY;
