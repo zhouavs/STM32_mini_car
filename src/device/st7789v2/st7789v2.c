@@ -3,6 +3,7 @@
 #include "common/delay/delay.h"
 #include "common/list/list.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 // 对象方法
 static errno_t init(const Device_ST7789V2 *const pd);
@@ -92,19 +93,23 @@ errno_t init(const Device_ST7789V2 *const pd) {
   err = pd->spi->ops->init(pd->spi);
   if (err) return err;
 
+  uint8_t ids[3] = {0};
+  err = read_display_id(pd, ids);
+  if (err) return err;
+  printf("display_id: id1: %x; id2: %x; id3: %x;\r\n", ids[0], ids[1], ids[2]);
   err = hardware_reset(pd);
   if (err) return err;
   err = sleep_out(pd);
   if (err) return err;
   err = normal_mode_on(pd);
   if (err) return err;
-  err = memery_data_access_control(pd, 0);
-  if (err) return err;
   err = display_inversion_off(pd);
+  if (err) return err;
+  err = memery_data_access_control(pd, 0);
   if (err) return err;
   err = set_pixel_color_format(pd, 16);
   if (err) return err;
-  err = display_off(pd);
+  err = display_on(pd);
   if (err) return err;
 
   return ESUCCESS;
