@@ -6,9 +6,9 @@
 
 #define MAX_MSG_LEN 0xFFFF
 
-static errno_t init(Device_SPI *pd);
-static errno_t receive(Device_SPI *pd, uint8_t *data, uint16_t len);
-static errno_t transmit(Device_SPI *pd, uint8_t *data, uint16_t len);
+static errno_t init(const Device_SPI *const pd);
+static errno_t receive(const Device_SPI *const pd, uint8_t *data, uint16_t len);
+static errno_t transmit(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
@@ -48,12 +48,12 @@ errno_t Device_SPI_find(Device_SPI **pd_ptr, const Device_SPI_name name) {
   return list->ops->find(list, pd_ptr, &name, match_device_by_name);
 }
 
-errno_t Device_SPI_TxCpltCallback(Device_SPI *pd) {
+errno_t Device_SPI_TxCpltCallback(const Device_SPI *const pd) {
   transmitting[pd->name] = 0;
   return ESUCCESS;
 }
 
-errno_t Device_SPI_RxCpltCallback(Device_SPI *pd) {
+errno_t Device_SPI_RxCpltCallback(const Device_SPI *const pd) {
   receiving[pd->name] = 0;
   return ESUCCESS;
 }
@@ -62,13 +62,13 @@ static inline uint8_t match_device_by_name(const void *const name, const void *c
   return (((Device_SPI *)pd)->name == *(Device_SPI_name *)name);
 }
 
-static errno_t init(Device_SPI *pd) {
+static errno_t init(const Device_SPI *const pd) {
   if (pd == NULL) return EINVAL;
 
   return ESUCCESS;
 }
 
-static errno_t transmit(Device_SPI *pd, uint8_t *data, uint16_t len) {
+static errno_t transmit(const Device_SPI *const pd, const uint8_t *const data, uint16_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;
@@ -93,7 +93,7 @@ static errno_t transmit(Device_SPI *pd, uint8_t *data, uint16_t len) {
   return ESUCCESS;
 }
 
-static errno_t receive(Device_SPI *pd, uint8_t *data, uint16_t len) {
+static errno_t receive(const Device_SPI *const pd, uint8_t *data, uint16_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;

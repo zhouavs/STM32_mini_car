@@ -18,21 +18,21 @@ typedef struct Device_SPI {
 } Device_SPI;
 
 typedef struct Device_SPI_ops {
-  errno_t (*init)(Device_SPI *pd);
-  errno_t (*transmit)(Device_SPI *pd, uint8_t *data, uint16_t len);
-  errno_t (*receive)(Device_SPI *pd, uint8_t *data, uint16_t len);
+  errno_t (*init)(const Device_SPI *const pd);
+  errno_t (*transmit)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
+  errno_t (*receive)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
 } Device_SPI_ops;
 
 typedef struct Driver_SPI_ops {
-  errno_t (*receive)(Device_SPI *pd, uint8_t *data, uint16_t len);
-  errno_t (*transmit)(Device_SPI *pd, uint8_t *data, uint16_t len);
-  errno_t (*receive_DMA)(Device_SPI *pd, uint8_t *data, uint16_t len);
-  errno_t (*transmit_DMA)(Device_SPI *pd, uint8_t *data, uint16_t len);
+  errno_t (*receive)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
+  errno_t (*transmit)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
+  errno_t (*receive_DMA)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
+  errno_t (*transmit_DMA)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
 } Driver_SPI_ops;
 
 errno_t Device_SPI_module_init(void);
 errno_t Device_SPI_register(Device_SPI *const pd);
 errno_t Device_SPI_find(Device_SPI **pd_ptr, const Device_SPI_name name);
 
-errno_t Device_SPI_TxCpltCallback(Device_SPI *pd);
-errno_t Device_SPI_RxCpltCallback(Device_SPI *pd);
+errno_t Device_SPI_TxCpltCallback(const Device_SPI *const pd);
+errno_t Device_SPI_RxCpltCallback(const Device_SPI *const pd);

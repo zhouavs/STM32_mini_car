@@ -41,6 +41,18 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
     .port = GPIOA,
     .pin = GPIO_PIN_15,
   },
+  [DEVICE_ST7789V2_1_CS]={
+    .port = GPIOD,
+    .pin = GPIO_PIN_3,
+  },
+  [DEVICE_ST7789V2_1_RST]={
+    .port = GPIOG,
+    .pin = GPIO_PIN_15,
+  },
+  [DEVICE_ST7789V2_1_DC]={
+    .port = GPIOF,
+    .pin = GPIO_PIN_9,
+  },
 };
 
 errno_t Device_config_GPIO_register_all_device(void) {

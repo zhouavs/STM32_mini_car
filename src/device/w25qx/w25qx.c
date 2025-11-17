@@ -1,5 +1,5 @@
 #include "w25qx.h"
-#include "w25qx_cmd.h"
+#include "cmd.h"
 #include "device/gpio/gpio.h"
 #include "config/index.h"
 #include <stdint.h>
@@ -30,8 +30,8 @@ static errno_t page_write(const Device_W25QX *const pd, uint32_t addr, uint8_t *
 static errno_t addr_to_bytes(uint32_t addr, uint8_t *bytes);
 
 // 全局变量
-List *list = NULL;
-const Device_W25QX_ops device_ops = {
+static List *list = NULL;
+static const Device_W25QX_ops device_ops = {
   .init = init,
   .erase = erase,
   .read = read,
@@ -67,8 +67,13 @@ static errno_t init(const Device_W25QX *const pd) {
   if (pd == NULL) return EINVAL;
 
   errno_t err = ESUCCESS;
-  uint32_t id = 0;
 
+  err = pd->cs->ops->init(pd->cs);
+  if (err) return err;
+  err = pd->spi->ops->init(pd->spi);
+  if (err) return err;
+
+  uint32_t id = 0;
   err = read_id(pd, &id);
   if (err) return err;
 
@@ -171,7 +176,7 @@ static errno_t write(const Device_W25QX *const pd, uint32_t addr, uint8_t *data,
 
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd) {
-  return ((Device_GPIO *)pd)->name == *((Device_GPIO_name *)name);
+  return ((Device_W25QX *)pd)->name == *((Device_W25QX_name *)name);
 }
 
 static errno_t read_id(const Device_W25QX *const pd, uint32_t *id_ptr) {
