@@ -30,8 +30,8 @@ static errno_t display_off(const Device_ST7789V2 *const pd);
 static errno_t display_on(const Device_ST7789V2 *const pd);
 static errno_t col_addr_set(const Device_ST7789V2 *const pd, uint16_t start, uint16_t end);
 static errno_t row_addr_set(const Device_ST7789V2 *const pd, uint16_t start, uint16_t end);
-static errno_t memery_write(const Device_ST7789V2 *const pd, uint8_t *data, uint32_t len);
-static errno_t memery_data_access_control(const Device_ST7789V2 *const pd, uint8_t param);
+static errno_t memory_write(const Device_ST7789V2 *const pd, uint8_t *data, uint32_t len);
+static errno_t memory_data_access_control(const Device_ST7789V2 *const pd, uint8_t param);
 static errno_t set_pixel_color_format(const Device_ST7789V2 *const pd, uint8_t bit_num);
 // 简化操作
 static errno_t write_register(const Device_ST7789V2 *const pd, const uint8_t cmd);
@@ -86,31 +86,38 @@ errno_t init(const Device_ST7789V2 *const pd) {
 
   err = pd->cs->ops->init(pd->cs);
   if (err) return err;
+
   err = pd->dc->ops->init(pd->dc);
   if (err) return err;
+
   err = pd->rst->ops->init(pd->rst);
   if (err) return err;
+
   err = pd->spi->ops->init(pd->spi);
   if (err) return err;
 
-  uint8_t ids[3] = {0};
-  err = read_display_id(pd, ids);
-  if (err) return err;
-  printf("display_id: id1: %x; id2: %x; id3: %x;\r\n", ids[0], ids[1], ids[2]);
+
   err = hardware_reset(pd);
   if (err) return err;
+
   err = sleep_out(pd);
   if (err) return err;
+
   err = normal_mode_on(pd);
   if (err) return err;
+
   err = display_inversion_off(pd);
   if (err) return err;
-  err = memery_data_access_control(pd, 0);
+
+  err = memory_data_access_control(pd, 0);
   if (err) return err;
+
   err = set_pixel_color_format(pd, 16);
   if (err) return err;
+
   err = display_on(pd);
   if (err) return err;
+
 
   return ESUCCESS;
 }
@@ -162,7 +169,7 @@ errno_t refresh_window(const Device_ST7789V2 *const pd) {
   if (!pd_is_cplt(pd)) return EINVAL;
   if (pd->pixel_bytes == NULL || pd->height == 0 || pd->width == 0 || pd->one_pixel_byte_num == 0) return EINVAL;
 
-  errno_t err = memery_write(pd, pd->pixel_bytes, pd->height * pd->width * pd->one_pixel_byte_num);
+  errno_t err = memory_write(pd, pd->pixel_bytes, pd->height * pd->width * pd->one_pixel_byte_num);
   if (err) return err;
 
   return ESUCCESS;
@@ -272,7 +279,7 @@ static errno_t read_display_status(const Device_ST7789V2 *const pd, uint8_t rt_s
   err = pd->cs->ops->write(pd->cs, PIN_VALUE_0);
   if (err) return err;
 
-  err = write_register(pd, ST7789V2_CMD_RDDID);
+  err = write_register(pd, ST7789V2_CMD_RDDST);
   if (err) goto reset_cs_tag;
 
   err = read_data(pd, rt_data, 5);
@@ -515,7 +522,7 @@ static errno_t row_addr_set(const Device_ST7789V2 *const pd, uint16_t start, uin
   return err;
 }
 
-static errno_t memery_write(const Device_ST7789V2 *const pd, uint8_t *data, uint32_t len) {
+static errno_t memory_write(const Device_ST7789V2 *const pd, uint8_t *data, uint32_t len) {
   if (!pd_is_cplt(pd)) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -539,7 +546,7 @@ static errno_t memery_write(const Device_ST7789V2 *const pd, uint8_t *data, uint
   return err;
 }
 
-static errno_t memery_data_access_control(const Device_ST7789V2 *const pd, uint8_t param) {
+static errno_t memory_data_access_control(const Device_ST7789V2 *const pd, uint8_t param) {
   if (!pd_is_cplt(pd)) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -568,9 +575,9 @@ static errno_t set_pixel_color_format(const Device_ST7789V2 *const pd, uint8_t b
 
   uint8_t param = 0;
   switch (bit_num) {
-    case 12: param = 0x53; break;
-    case 16: param = 0x55; break;
-    case 18: param = 0x66; break;
+    case 12: param = 0x03; break;
+    case 16: param = 0x05; break;
+    case 18: param = 0x06; break;
     default: return EINVAL;
   }
 
@@ -600,20 +607,18 @@ static errno_t write_register(const Device_ST7789V2 *const pd, const uint8_t cmd
 
   errno_t err = ESUCCESS;
 
-  err = pd->dc->ops->write(pd->dc, PIN_VALUE_0);
+  Pin_value dc_value = PIN_VALUE_1;
+  err = pd->dc->ops->read(pd->dc, &dc_value);
   if (err) return err;
+  if (dc_value == PIN_VALUE_1) {
+    err = pd->dc->ops->write(pd->dc, PIN_VALUE_0);
+    if (err) return err;
+  }
 
   err = pd->spi->ops->transmit(pd->spi, &cmd, 1);
-  if (err) goto reset_dc_tag;
-
-  err = pd->dc->ops->write(pd->dc, PIN_VALUE_1);
   if (err) return err;
 
   return ESUCCESS;
-
-  reset_dc_tag:
-  pd->dc->ops->write(pd->dc, PIN_VALUE_1);
-  return err;
 }
 
 static errno_t write_data(const Device_ST7789V2 *const pd, const uint8_t *data, uint32_t len) {
@@ -621,27 +626,41 @@ static errno_t write_data(const Device_ST7789V2 *const pd, const uint8_t *data, 
 
   errno_t err = ESUCCESS;
 
-  Pin_value dc_value = PIN_VALUE_0;
-  err = pd->dc->ops->read(pd->dc, &dc_value);
+  err = pd->dc->ops->write(pd->dc, PIN_VALUE_1);
   if (err) return err;
-  if (dc_value == PIN_VALUE_0) {
-    err = pd->dc->ops->write(pd->dc, PIN_VALUE_1);
-    if (err) return err;
-  }
 
   err = pd->spi->ops->transmit(pd->spi, data, len);
+  if (err) goto reset_dc_tag;
+
+  err = pd->dc->ops->write(pd->dc, PIN_VALUE_0);
   if (err) return err;
 
   return ESUCCESS;
+
+  reset_dc_tag:
+  pd->dc->ops->write(pd->dc, PIN_VALUE_0);
+  return err;
 }
 
 static errno_t read_data(const Device_ST7789V2 *const pd, uint8_t *rt_data, uint32_t len) {
   if (!pd_is_cplt(pd)) return EINVAL;
 
-  errno_t err = pd->spi->ops->receive(pd->spi, rt_data, len);
+  errno_t err = ESUCCESS;
+
+  err = pd->dc->ops->write(pd->dc, PIN_VALUE_1);
+  if (err) return err;
+
+  err = pd->spi->ops->receive(pd->spi, rt_data, len);
+  if (err) goto reset_dc_tag;
+
+  err = pd->dc->ops->write(pd->dc, PIN_VALUE_0);
   if (err) return err;
 
   return ESUCCESS;
+
+  reset_dc_tag:
+  pd->dc->ops->write(pd->dc, PIN_VALUE_0);
+  return err;
 }
 
 static inline uint8_t pd_is_cplt(const Device_ST7789V2 *const pd) {
