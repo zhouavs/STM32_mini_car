@@ -7,6 +7,8 @@
 static Device_ST7789V2 devices[DEVICE_ST7789V2_COUNT] = {
   [DEVICE_ST7789V2_1] = {
     .name = DEVICE_ST7789V2_1,
+    .screen_width = 240,
+    .screen_height = 320,
     .one_pixel_byte_num = 2, // 目前只支持 16 位 RGB 为 565 的像素格式
   },
 };

@@ -14,7 +14,12 @@
 #include "device/st7789v2/st7789v2.h"
 #include "device_config/st7789v2/st7789v2.h"
 
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+#define ONE_PIXEL_BYTE_NUM 2
+
 static errno_t init(void);
+static errno_t clear_screen(uint16_t color);
 
 void st7789v2_test() {
   errno_t err = init();
@@ -24,19 +29,22 @@ void st7789v2_test() {
   err = Device_ST7789V2_find(&pds, DEVICE_ST7789V2_1);
   if (err) goto print_err_tag;
 
+  err = pds->ops->init(pds);
+  if (err) goto print_err_tag;
+
+  err = clear_screen(0xffff);
+  if (err) goto print_err_tag;
+
   uint8_t pixel_bytes[40 * 40 * 2] = {0};
   pds->pixel_bytes = pixel_bytes;
   pds->pixel_bytes_size = 40 * 40 * 2;
 
-  err = pds->ops->init(pds);
-  if (err) goto print_err_tag;
-
-  err = pds->ops->set_display_window(pds, 10, 20, 49, 59);
+  err = pds->ops->set_window(pds, 10, 20, 49, 59);
   if (err) goto print_err_tag;
 
   for (uint16_t y = 0; y < 40; ++y) {
     for (uint16_t x = 0; x < 40; ++x) {
-      err = pds->ops->set_pixel(pds, y, x, 0xfccb);
+      err = pds->ops->set_pixel(pds, y, x, 0x8f4a);
       if (err) {
         goto print_err_tag;
       }
@@ -91,4 +99,39 @@ static errno_t init(void) {
   print_err_tag:
   printf("st7789v2_test_init_err\r\nerr: %d\r\n", err);
   return err;
+}
+
+static errno_t clear_screen(uint16_t color) {
+  Device_ST7789V2 *pds = NULL;
+  errno_t err = Device_ST7789V2_find(&pds, DEVICE_ST7789V2_1);
+  if (err) return err;
+
+  uint8_t pixel_bytes[SCREEN_WIDTH * 1 * ONE_PIXEL_BYTE_NUM] = {0};
+  pds->pixel_bytes = pixel_bytes;
+  pds->pixel_bytes_size = SCREEN_WIDTH * 1 * ONE_PIXEL_BYTE_NUM;
+
+  err = pds->ops->set_window(pds, 0, 0, 0, SCREEN_WIDTH - 1);
+  if (err) return err;
+
+  for (uint16_t x = 0; x < SCREEN_WIDTH; ++x) {
+    err = pds->ops->set_pixel(pds, 0, x, color);
+    if (err) return err;
+  }
+  
+  err = pds->ops->refresh_window(pds);
+  if (err) return err;
+
+  for (uint16_t y = 0; y < SCREEN_HEIGHT; ++y) {
+    err = pds->ops->set_window(pds, y, 0, y, SCREEN_WIDTH - 1);
+    if (err) {
+      return err;
+    }
+
+    err = pds->ops->refresh_window(pds);
+    if (err) {
+      return err;
+    }
+  }
+
+  return ESUCCESS;
 }

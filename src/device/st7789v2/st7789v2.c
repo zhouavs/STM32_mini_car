@@ -9,7 +9,7 @@
 static errno_t init(const Device_ST7789V2 *const pd);
 static errno_t on(const Device_ST7789V2 *const pd);
 static errno_t off(const Device_ST7789V2 *const pd);
-static errno_t set_display_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x);
+static errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x);
 static errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, uint16_t color);
 static errno_t refresh_window(const Device_ST7789V2 *const pd);
 
@@ -48,9 +48,9 @@ static const Device_ST7789V2_ops device_ops = {
   .init = init,
   .on = on,
   .off = off,
-  .set_display_window = set_display_window,
-  .set_pixel = set_pixel,
+  .set_window = set_window,
   .refresh_window = refresh_window,
+  .set_pixel = set_pixel,
 };
 
 errno_t Device_ST7789V2_module_init(void) {
@@ -129,7 +129,7 @@ errno_t init(const Device_ST7789V2 *const pd) {
   printf("ST7789V2_ID: 0x%02x%02x%02x;\r\n", ids[0], ids[1], ids[2]);
 
   uint8_t status[4] = {0};
-  err = read_display_id(pd, status);
+  err = read_display_status(pd, status);
   if (err) return err;
   printf("ST7789V2_status: 0x%02x%02x%02x%02x;\r\n", status[0], status[1], status[2], status[3]);
 
@@ -145,7 +145,7 @@ errno_t off(const Device_ST7789V2 *const pd) {
   return display_off(pd);
 }
 
-errno_t set_display_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x) {
+errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x) {
   if (!pd_is_cplt(pd)) return EINVAL;
   if (start_x > end_x || start_y > end_y) return EINVAL;
 
@@ -162,8 +162,18 @@ errno_t set_display_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t
   err = row_addr_set(pd, start_y, end_y);
   if (err) return err;
 
-  pd->width = width;
-  pd->height = height;
+  pd->window_width = width;
+  pd->window_height = height;
+
+  return ESUCCESS;
+}
+
+errno_t refresh_window(const Device_ST7789V2 *const pd) {
+  if (!pd_is_cplt(pd)) return EINVAL;
+  if (pd->pixel_bytes == NULL || pd->window_height == 0 || pd->window_width == 0 || pd->one_pixel_byte_num == 0) return EINVAL;
+
+  errno_t err = memory_write(pd, pd->pixel_bytes, pd->window_height * pd->window_width * pd->one_pixel_byte_num);
+  if (err) return err;
 
   return ESUCCESS;
 }
@@ -171,25 +181,14 @@ errno_t set_display_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t
 errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, uint16_t color) {
   if (!pd_is_cplt(pd)) return EINVAL;
   if (pd->pixel_bytes == NULL) return EINVAL;
-  if (y >= pd->height || x >= pd->width) return EINVAL;
+  if (y >= pd->window_height || x >= pd->window_width) return EINVAL;
 
-  const uint32_t byte_idx = (y * pd->width + x) * pd->one_pixel_byte_num;
+  const uint32_t byte_idx = (y * pd->window_width + x) * pd->one_pixel_byte_num;
   pd->pixel_bytes[byte_idx] = (uint8_t)(color >> 8);
   pd->pixel_bytes[byte_idx + 1] = (uint8_t)color;
 
   return ESUCCESS;
 }
-
-errno_t refresh_window(const Device_ST7789V2 *const pd) {
-  if (!pd_is_cplt(pd)) return EINVAL;
-  if (pd->pixel_bytes == NULL || pd->height == 0 || pd->width == 0 || pd->one_pixel_byte_num == 0) return EINVAL;
-
-  errno_t err = memory_write(pd, pd->pixel_bytes, pd->height * pd->width * pd->one_pixel_byte_num);
-  if (err) return err;
-
-  return ESUCCESS;
-}
-
 
 static errno_t hardware_reset(const Device_ST7789V2 *const pd) {
   if (!pd_is_cplt(pd)) return EINVAL;
