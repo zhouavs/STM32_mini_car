@@ -19,13 +19,15 @@ typedef struct Device_SPI {
 
 typedef struct Device_SPI_ops {
   errno_t (*init)(const Device_SPI *const pd);
-  errno_t (*transmit)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
-  errno_t (*receive)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
+  errno_t (*transmit)(const Device_SPI *const pd, const uint8_t *const data, uint32_t len);
+  errno_t (*receive)(const Device_SPI *const pd, uint8_t *data, uint32_t len);
 } Device_SPI_ops;
 
 typedef struct Driver_SPI_ops {
   errno_t (*receive)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
   errno_t (*transmit)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
+  errno_t (*receive_IT)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
+  errno_t (*transmit_IT)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
   errno_t (*receive_DMA)(const Device_SPI *const pd, uint8_t *data, uint16_t len);
   errno_t (*transmit_DMA)(const Device_SPI *const pd, const uint8_t *const data, uint16_t len);
 } Driver_SPI_ops;
