@@ -7,7 +7,7 @@ typedef enum Device_GPIO_name {
   DEVICE_LED_1, DEVICE_LED_2, DEVICE_LED_3, DEVICE_LED_4,
   DEVICE_KEY_1, DEVICE_KEY_2, DEVICE_KEY_3, DEVICE_KEY_4,
   DEVICE_W25Q64_CS,
-  DEVICE_ST7789V2_1_CS, DEVICE_ST7789V2_1_RST, DEVICE_ST7789V2_1_DC,
+  DEVICE_ST7789V2_1_CS, DEVICE_ST7789V2_1_RST, DEVICE_ST7789V2_1_DC, DEVICE_ST7789V2_1_BACKLIGHT,
   DEVICE_GPIO_COUNT,
 } Device_GPIO_name;
 
@@ -20,9 +20,9 @@ struct Device_GPIO;
 struct Device_GPIO_ops;
 
 typedef struct Device_GPIO {
-  Device_GPIO_name name;
-  void *port;
-  uint16_t pin;
+  const Device_GPIO_name name;
+  void *const port;
+  const uint16_t pin;
   const struct Device_GPIO_ops *ops;
 } Device_GPIO;
 

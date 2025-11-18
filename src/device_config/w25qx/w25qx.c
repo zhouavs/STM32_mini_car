@@ -5,7 +5,9 @@
 #include <stdlib.h>
 
 static Device_W25QX devices[DEVICE_W25QX_COUNT] = {
-  [DEVICE_W25Q64] = {0},
+  [DEVICE_W25Q64] = {
+    .name = DEVICE_W25Q64,
+  },
 };
 // 关联的 GPIO
 static const Device_GPIO_name relate_cs[DEVICE_W25QX_COUNT] = {
@@ -18,8 +20,6 @@ static const Device_SPI_name relate_spi[DEVICE_W25QX_COUNT] = {
 
 errno_t Device_config_W25QX_register_all_device(void) {
   for (Device_W25QX_name name = 0; name < DEVICE_W25QX_COUNT; ++name) {
-    devices[name].name = name;
-
     errno_t err = ESUCCESS;
 
     err = Device_GPIO_find(&devices[name].cs, relate_cs[name]);

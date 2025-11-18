@@ -12,8 +12,8 @@ struct Device_USART;
 struct Device_USART_ops;
 
 typedef struct Device_USART {
-  Device_USART_name name;
-  void *channel;
+  const Device_USART_name name;
+  void *const channel;
   const struct Device_USART_ops *ops;
 } Device_USART;
 

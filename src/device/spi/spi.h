@@ -12,8 +12,8 @@ struct Device_SPI;
 struct Device_SPI_ops;
 
 typedef struct Device_SPI {
-  Device_SPI_name name;
-  void *channel;
+  const Device_SPI_name name;
+  void *const channel;
   const struct Device_SPI_ops *ops;
 } Device_SPI;
 

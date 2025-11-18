@@ -30,12 +30,13 @@ void st7789v2_test() {
 
   err = pds->ops->init(pds);
   if (err) goto print_err_tag;
+
   err = pds->ops->set_display_window(pds, 10, 20, 49, 59);
   if (err) goto print_err_tag;
 
   for (uint16_t y = 0; y < 40; ++y) {
     for (uint16_t x = 0; x < 40; ++x) {
-      err = pds->ops->set_pixel(pds, y, x, 0xf800);
+      err = pds->ops->set_pixel(pds, y, x, 0xfccb);
       if (err) {
         goto print_err_tag;
       }

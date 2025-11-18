@@ -6,13 +6,13 @@
 
 static Device_USART devices[DEVICE_USART_COUNT] = {
   [DEVICE_USART_DEBUG] = {
+    .name = DEVICE_USART_DEBUG,
     .channel = &huart1,
   },
 };
 
 errno_t Device_config_USART_register_all_device(void) {
   for (Device_USART_name name = 0; name < DEVICE_USART_COUNT; ++name) {
-    devices[name].name = name;
     errno_t err = Device_USART_register(&devices[name]);
     if (err) return err;
   }

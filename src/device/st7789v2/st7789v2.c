@@ -93,9 +93,14 @@ errno_t init(const Device_ST7789V2 *const pd) {
   err = pd->rst->ops->init(pd->rst);
   if (err) return err;
 
+  err = pd->backlight->ops->init(pd->backlight);
+  if (err) return err;
+
   err = pd->spi->ops->init(pd->spi);
   if (err) return err;
 
+  err = pd->backlight->ops->write(pd->backlight, PIN_VALUE_0);
+  if (err) return err;
 
   err = hardware_reset(pd);
   if (err) return err;
@@ -117,6 +122,16 @@ errno_t init(const Device_ST7789V2 *const pd) {
 
   err = display_on(pd);
   if (err) return err;
+
+  uint8_t ids[3] = {0};
+  err = read_display_id(pd, ids);
+  if (err) return err;
+  printf("ST7789V2_ID: 0x%02x%02x%02x;\r\n", ids[0], ids[1], ids[2]);
+
+  uint8_t status[4] = {0};
+  err = read_display_id(pd, status);
+  if (err) return err;
+  printf("ST7789V2_status: 0x%02x%02x%02x%02x;\r\n", status[0], status[1], status[2], status[3]);
 
 
   return ESUCCESS;
@@ -483,7 +498,7 @@ static errno_t col_addr_set(const Device_ST7789V2 *const pd, uint16_t start, uin
   err = write_register(pd, ST7789V2_CMD_CASET);
   if (err) goto reset_cs_tag;
 
-  uint8_t data[4] = { (uint8_t)start >> 8, (uint8_t)start, (uint8_t)end >> 8, (uint8_t)end };
+  uint8_t data[4] = { (uint8_t)(start >> 8), (uint8_t)start, (uint8_t)(end >> 8), (uint8_t)end };
   err = write_data(pd, data, 4);
   if (err) goto reset_cs_tag;
 
@@ -508,7 +523,7 @@ static errno_t row_addr_set(const Device_ST7789V2 *const pd, uint16_t start, uin
   err = write_register(pd, ST7789V2_CMD_RASET);
   if (err) goto reset_cs_tag;
 
-  uint8_t data[4] = { (uint8_t)start >> 8, (uint8_t)start, (uint8_t)end >> 8, (uint8_t)end };
+  uint8_t data[4] = { (uint8_t)(start >> 8), (uint8_t)start, (uint8_t)(end >> 8), (uint8_t)end };
   err = write_data(pd, data, 4);
   if (err) goto reset_cs_tag;
 
@@ -670,6 +685,7 @@ static inline uint8_t pd_is_cplt(const Device_ST7789V2 *const pd) {
     && pd->cs != NULL
     && pd->dc != NULL
     && pd->rst != NULL
+    && pd->backlight != NULL
     && pd->spi != NULL
   );
 }

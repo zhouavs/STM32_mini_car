@@ -14,10 +14,11 @@ struct Device_ST7789V2;
 struct Device_ST7789V2_ops;
 
 typedef struct Device_ST7789V2 {
-  Device_ST7789V2_name name;
+  const Device_ST7789V2_name name;
   Device_GPIO *rst;
   Device_GPIO *cs;
   Device_GPIO *dc;
+  Device_GPIO *backlight;
   Device_SPI *spi;
   uint8_t one_pixel_byte_num;
   uint16_t width;

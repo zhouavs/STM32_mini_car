@@ -6,6 +6,7 @@
 
 static Device_ST7789V2 devices[DEVICE_ST7789V2_COUNT] = {
   [DEVICE_ST7789V2_1] = {
+    .name = DEVICE_ST7789V2_1,
     .one_pixel_byte_num = 2, // 目前只支持 16 位 RGB 为 565 的像素格式
   },
 };
@@ -21,6 +22,10 @@ static const Device_GPIO_name relate_rst[DEVICE_ST7789V2_COUNT] = {
 static const Device_GPIO_name relate_dc[DEVICE_ST7789V2_COUNT] = {
   [DEVICE_ST7789V2_1] = DEVICE_ST7789V2_1_DC,
 };
+// 关联的 LEDA 背光灯控制线
+static const Device_GPIO_name relate_backlight[DEVICE_ST7789V2_COUNT] = {
+  [DEVICE_ST7789V2_1] = DEVICE_ST7789V2_1_BACKLIGHT,
+};
 // 关联的 SPI
 static const Device_SPI_name relate_spi[DEVICE_ST7789V2_COUNT] = {
   [DEVICE_ST7789V2_1] = DEVICE_SPI_1,
@@ -28,8 +33,6 @@ static const Device_SPI_name relate_spi[DEVICE_ST7789V2_COUNT] = {
 
 errno_t Device_config_ST7789V2_register_all_device(void) {
   for (Device_ST7789V2_name name = 0; name < DEVICE_ST7789V2_COUNT; ++name) {
-    devices[name].name = name;
-
     errno_t err = ESUCCESS;
 
     err = Device_GPIO_find(&devices[name].cs, relate_cs[name]);
@@ -37,6 +40,8 @@ errno_t Device_config_ST7789V2_register_all_device(void) {
     err = Device_GPIO_find(&devices[name].dc, relate_dc[name]);
     if (err) return err;
     err = Device_GPIO_find(&devices[name].rst, relate_rst[name]);
+    if (err) return err;
+    err = Device_GPIO_find(&devices[name].backlight, relate_backlight[name]);
     if (err) return err;
     err = Device_SPI_find(&devices[name].spi, relate_spi[name]);
     if (err) return err;

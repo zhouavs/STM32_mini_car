@@ -14,7 +14,7 @@ struct Device_W25QX;
 struct Device_W25QX_ops;
 
 typedef struct Device_W25QX {
-  Device_W25QX_name name;
+  const Device_W25QX_name name;
   Device_GPIO *cs;
   Device_SPI *spi;
   const struct Device_W25QX_ops *ops;

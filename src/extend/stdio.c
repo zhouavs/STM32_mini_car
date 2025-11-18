@@ -26,3 +26,23 @@ int _write(int fd, const char *buf, int len) {
 
   return len;
 }
+
+struct __FILE{
+    int handle;
+};
+
+FILE __stdout;
+
+int fputc(int ch, FILE *f)
+{
+    (void)f;
+    Device_USART *pd = NULL;
+    errno_t err = Device_USART_find(&pd, DEVICE_USART_DEBUG);
+    if (err) return 0;
+    
+    if(pd->ops->transmit(pd, (unsigned char*)&ch, 1) == 1)
+        return ch;
+    
+    return 0;
+}
+

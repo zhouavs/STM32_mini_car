@@ -6,13 +6,13 @@
 
 static Device_SPI devices[DEVICE_SPI_COUNT] = {
   [DEVICE_SPI_1] = {
+    .name = DEVICE_SPI_1,
     .channel = &hspi1,
   },
 };
 
 errno_t Device_config_SPI_register_all_device(void) {
   for (Device_SPI_name name = 0; name < DEVICE_SPI_COUNT; ++name) {
-    devices[name].name = name;
     errno_t err = Device_SPI_register(&devices[name]);
     if (err) return err;
   }
