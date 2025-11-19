@@ -2,16 +2,23 @@
 #include "cmd.h"
 #include "common/delay/delay.h"
 #include "common/list/list.h"
+#include "font/index.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // 对象方法
 static errno_t init(const Device_ST7789V2 *const pd);
 static errno_t on(const Device_ST7789V2 *const pd);
 static errno_t off(const Device_ST7789V2 *const pd);
+static errno_t set_display_memory(Device_ST7789V2 *const pd, uint8_t *memory_ptr, uint32_t memory_size);
 static errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x);
-static errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, uint16_t color);
+static errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, color_t color);
+static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color, uint16_t background_color);
+static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color, color_t background_color);
+static errno_t fill_window(Device_ST7789V2 *const pd, color_t color);
 static errno_t refresh_window(const Device_ST7789V2 *const pd);
+static errno_t clear_screen(Device_ST7789V2 *const pd, color_t color);
 
 // 内部方法
 // 设备命令方法
@@ -48,9 +55,14 @@ static const Device_ST7789V2_ops device_ops = {
   .init = init,
   .on = on,
   .off = off,
+  .set_display_memory = set_display_memory,
   .set_window = set_window,
-  .refresh_window = refresh_window,
   .set_pixel = set_pixel,
+  .set_ascii_char = set_ascii_char,
+  .set_ascii_str = set_ascii_str,
+  .fill_window = fill_window,
+  .refresh_window = refresh_window,
+  .clear_screen = clear_screen,
 };
 
 errno_t Device_ST7789V2_module_init(void) {
@@ -79,7 +91,7 @@ errno_t Device_ST7789V2_find(Device_ST7789V2 **pd_ptr, const Device_ST7789V2_nam
 }
 
 
-errno_t init(const Device_ST7789V2 *const pd) {
+static errno_t init(const Device_ST7789V2 *const pd) {
   if (!pd_is_cplt(pd)) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -137,15 +149,24 @@ errno_t init(const Device_ST7789V2 *const pd) {
   return ESUCCESS;
 }
 
-errno_t on(const Device_ST7789V2 *const pd) {
+static errno_t on(const Device_ST7789V2 *const pd) {
   return display_on(pd);
 }
 
-errno_t off(const Device_ST7789V2 *const pd) {
+static errno_t off(const Device_ST7789V2 *const pd) {
   return display_off(pd);
 }
 
-errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x) {
+static errno_t set_display_memory(Device_ST7789V2 *const pd, uint8_t *memory_ptr, uint32_t memory_size) {
+  if (!pd_is_cplt(pd)) return EINVAL;
+
+  pd->display_memory = memory_ptr;
+  pd->display_memory_size = memory_size;
+
+  return ESUCCESS;
+}
+
+static errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x) {
   if (!pd_is_cplt(pd)) return EINVAL;
   if (start_x > end_x || start_y > end_y) return EINVAL;
 
@@ -153,7 +174,7 @@ errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x
   const uint16_t height = end_y - start_y + 1;
 
   // 设置的显示范围需要用到的字节数必须小于当前缓冲区的字节数
-  if (width * height * pd->one_pixel_byte_num > pd->pixel_bytes_size) return EINVAL;
+  if (width * height * pd->one_pixel_byte_num > pd->display_memory_size) return EINVAL;
 
   errno_t err = ESUCCESS;
 
@@ -168,26 +189,169 @@ errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x
   return ESUCCESS;
 }
 
-errno_t refresh_window(const Device_ST7789V2 *const pd) {
+static errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, color_t color) {
   if (!pd_is_cplt(pd)) return EINVAL;
-  if (pd->pixel_bytes == NULL || pd->window_height == 0 || pd->window_width == 0 || pd->one_pixel_byte_num == 0) return EINVAL;
+  if (pd->display_memory == NULL) return EINVAL;
+  if (y >= pd->window_height || x >= pd->window_width) return EINVAL;
 
-  errno_t err = memory_write(pd, pd->pixel_bytes, pd->window_height * pd->window_width * pd->one_pixel_byte_num);
+  const uint32_t byte_idx = (y * pd->window_width + x) * pd->one_pixel_byte_num;
+  pd->display_memory[byte_idx] = (uint8_t)(color >> 8);
+  pd->display_memory[byte_idx + 1] = (uint8_t)color;
+
+  return ESUCCESS;
+}
+
+static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color, uint16_t background_color) {
+  if (pds == NULL) return EINVAL;
+  if (ch >= ASCII_CHAR_COUNT) return EINVAL;
+
+  // 如果起始坐标超出显示窗口范围, 那就什么都不做
+  if (start_x >= pds->window_width || start_y >= pds->window_height) return ESUCCESS;
+  
+  // 获取字体样式
+  const ascii_font_t *font = Font_get_ascii(ch);
+  if (font == NULL) return EINVAL;
+
+  // 获取显示范围
+  uint16_t end_x = start_x + ASCII_CHAR_WIDTH - 1;
+  uint16_t end_y = start_y + ASCII_CHAR_HEIGHT - 1;
+  if (end_x > pds->window_width - 1) end_x = pds->window_width - 1;
+  if (end_y > pds->window_height - 1) end_y = pds->window_height - 1;
+  const uint8_t width = (uint8_t)(end_x - start_x + 1);
+  const uint8_t height = (uint8_t)(end_y - start_y + 1);
+
+  errno_t err = ESUCCESS;
+
+  for (uint8_t move_y = 0; move_y < height; ++move_y) {
+    for (uint8_t move_x = 0; move_x < width; ++move_x) {
+      color_t pixel_color = 0;
+      if ((*font)[move_y] & (1 << move_x)) {
+        pixel_color = color;
+      } else {
+        pixel_color = background_color;
+      }
+      err = pds->ops->set_pixel(pds, start_y + move_y, start_x + move_x, pixel_color);
+      if (err) return err;
+    }
+  }
+
+  return ESUCCESS;
+}
+
+static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color, color_t background_color) {
+  if (pds == NULL) return EINVAL;
+
+  // 如果起始纵坐标超出屏幕范围, 那就什么都不做
+  if (start_y >= pds->window_height) return ESUCCESS;
+
+  uint16_t cur_x = start_x, cur_y = start_y;
+  for (uint32_t i = 0; i < len; ++i) {
+    if (str[i] == '\r') {
+      cur_x = 0;
+      continue;
+    }
+
+    if (str[i] == '\n') {
+      cur_y += ASCII_CHAR_HEIGHT;
+      continue;
+    }
+
+    if (cur_x + ASCII_CHAR_WIDTH > pds->window_width) {
+      cur_x = 0;
+      cur_y += ASCII_CHAR_HEIGHT;
+    }
+
+    if (cur_y >= pds->window_height) {
+      break;
+    }
+  
+    set_ascii_char(pds, str[i], cur_y, cur_x, color, background_color);
+    cur_x += ASCII_CHAR_WIDTH;
+  }
+
+  return ESUCCESS;
+}
+
+static errno_t fill_window(Device_ST7789V2 *const pd, color_t color) {
+  if (!pd_is_cplt(pd)) return EINVAL;
+  if (pd->display_memory == NULL || pd->window_height == 0 || pd->window_width == 0 || pd->one_pixel_byte_num == 0) return EINVAL;
+
+  errno_t err = ESUCCESS;
+
+  for (uint16_t y = 0; y < pd->window_height; ++y) {
+    for (uint16_t x = 0; x < pd->window_width; ++x) {
+      err = pd->ops->set_pixel(pd, y, x, color);
+      if (err) return err;
+    }
+  }
+
+  err = pd->ops->refresh_window(pd);
   if (err) return err;
 
   return ESUCCESS;
 }
 
-errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, uint16_t color) {
+static errno_t refresh_window(const Device_ST7789V2 *const pd) {
   if (!pd_is_cplt(pd)) return EINVAL;
-  if (pd->pixel_bytes == NULL) return EINVAL;
-  if (y >= pd->window_height || x >= pd->window_width) return EINVAL;
+  if (pd->display_memory == NULL || pd->window_height == 0 || pd->window_width == 0 || pd->one_pixel_byte_num == 0) return EINVAL;
 
-  const uint32_t byte_idx = (y * pd->window_width + x) * pd->one_pixel_byte_num;
-  pd->pixel_bytes[byte_idx] = (uint8_t)(color >> 8);
-  pd->pixel_bytes[byte_idx + 1] = (uint8_t)color;
+  errno_t err = memory_write(pd, pd->display_memory, pd->window_height * pd->window_width * pd->one_pixel_byte_num);
+  if (err) return err;
 
   return ESUCCESS;
+}
+
+static errno_t clear_screen(Device_ST7789V2 *const pd, color_t color) {
+  if (!pd_is_cplt(pd)) return EINVAL;
+
+  errno_t err = ESUCCESS;
+
+  const uint32_t display_memory_size = pd->screen_width * 1 * pd->one_pixel_byte_num;
+  uint8_t *const display_memory = (uint8_t *)malloc(display_memory_size);
+  if (display_memory == NULL) return ENOMEM;
+
+  memset(display_memory, 0, display_memory_size);
+
+  // 申请变量暂存旧显存数据, 程序结束后恢复设置为旧显存
+  uint8_t *const old_display_memory = pd->display_memory;
+  const uint32_t old_display_memory_size = pd->display_memory_size;
+
+  err = pd->ops->set_display_memory(pd, display_memory, display_memory_size);
+  if (err) goto defer_tag;
+
+  // 先刷新首行
+  err = pd->ops->set_window(pd, 0, 0, 0, pd->screen_width - 1);
+  if (err) goto defer_tag;
+
+  for (uint16_t x = 0; x < pd->screen_width; ++x) {
+    err = pd->ops->set_pixel(pd, 0, x, color);
+    if (err) goto defer_tag;
+  }
+  
+  err = pd->ops->refresh_window(pd);
+  if (err) goto defer_tag;
+
+  // 再逐次向下移动窗口刷新其余行
+  for (uint16_t y = 1; y < pd->screen_height; ++y) {
+    err = pd->ops->set_window(pd, y, 0, y, pd->screen_width - 1);
+    if (err) {
+      goto defer_tag;
+    }
+
+    err = pd->ops->refresh_window(pd);
+    if (err) {
+      goto defer_tag;
+    }
+  }
+
+  err = ESUCCESS;
+
+  defer_tag:
+
+  free(display_memory);
+  pd->ops->set_display_memory(pd, old_display_memory, old_display_memory_size);
+
+  return err;
 }
 
 static errno_t hardware_reset(const Device_ST7789V2 *const pd) {

@@ -26,7 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/st7789v2/st7789v2.h"
+#include "src/application/font/font.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -96,7 +96,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  st7789v2_test();
+  font_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
