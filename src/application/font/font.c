@@ -30,20 +30,25 @@ void font_test(void) {
 
   err = pds->ops->clear_screen(pds, 0xf628);
   if (err) goto print_err_tag;
+
+  const uint16_t width = 200;
+  const uint16_t height = 200;
+  const uint16_t start_y = 10;
+  const uint16_t start_x = 10;
   
-  const uint32_t display_memory_size = 100 * 100 * 2;
+  const uint32_t display_memory_size = width * height * pds->one_pixel_byte_num;
   uint8_t *const display_memory = (uint8_t *)calloc(display_memory_size, sizeof(uint8_t));
 
   err = pds->ops->set_display_memory(pds, display_memory, display_memory_size);
   if (err) goto print_err_tag;
   
-  err = pds->ops->set_window(pds, 20, 10, 120 - 1, 110 - 1);
+  err = pds->ops->set_window(pds, start_y, start_x, start_y + height - 1, start_x + width - 1);
   if (err) goto print_err_tag;
   
   err = pds->ops->fill_window(pds, 0xf628);
   if (err) goto print_err_tag;
 
-  const char *const str = "abcABCZYXzyx\r\nHIG\r\nOPQ\r\n1234\r5\n6";
+  const char *const str = "Akemi Homura love Kaname Modoka\r\nNagasaki Soyo\r\nAnon Tokyo\r\nTogawa Sakiko\r\n";
   err = pds->ops->set_ascii_str(pds, (uint8_t *)str, strlen(str), 0, 0, 0x0000, 0xf628);
   if (err) goto print_err_tag;
 
