@@ -285,9 +285,6 @@ static errno_t fill_window(Device_ST7789V2 *const pd, color_t color) {
     }
   }
 
-  err = pd->ops->refresh_window(pd);
-  if (err) return err;
-
   return ESUCCESS;
 }
 
