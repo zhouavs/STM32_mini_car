@@ -6,9 +6,10 @@
 
 #define MAX_MSG_LEN 0xFFFF
 
-static errno_t init(const Device_I2C *const pd);
-static errno_t receive(const Device_I2C *const pd, uint8_t *data, uint32_t len);
-static errno_t transmit(const Device_I2C *const pd, uint8_t *const data, uint32_t len);
+static errno_t init(Device_I2C *const pd);
+static errno_t transmit_empty(Device_I2C *const pd, uint16_t slave_addr);
+static errno_t receive(const Device_I2C *const pd, uint16_t slave_addr, uint8_t *data, uint32_t len);
+static errno_t transmit(const Device_I2C *const pd, uint16_t slave_addr, uint8_t *const data, uint32_t len);
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
@@ -16,6 +17,7 @@ static const Device_I2C_ops device_ops = {
   .init = init,
   .receive = receive,
   .transmit = transmit,
+  .transmit_empty = transmit_empty,
 };
 
 static List *list = NULL;
@@ -62,13 +64,24 @@ static inline uint8_t match_device_by_name(const void *const name, const void *c
   return (((Device_I2C *)pd)->name == *(Device_I2C_name *)name);
 }
 
-static errno_t init(const Device_I2C *const pd) {
+static errno_t init(Device_I2C *const pd) {
   if (pd == NULL) return EINVAL;
+
+  return driver_ops->get_own_addr(pd, &pd->own_addr);
 
   return ESUCCESS;
 }
 
-static errno_t transmit(const Device_I2C *const pd, uint8_t *const data, uint32_t len) {
+static errno_t transmit_empty(Device_I2C *const pd, uint16_t slave_addr) {
+  if (pd == NULL) return EINVAL;
+
+  errno_t err = driver_ops->master_transmit(pd, slave_addr, NULL, 0);
+  if (err) return err;
+
+  return ESUCCESS;
+}
+
+static errno_t transmit(const Device_I2C *const pd, uint16_t slave_addr, uint8_t *const data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;
@@ -86,9 +99,9 @@ static errno_t transmit(const Device_I2C *const pd, uint8_t *const data, uint32_
     transmitting[pd->name] = 1;
     errno_t err = ESUCCESS;
     if (cur_len == 1) {
-      err = driver_ops->master_transmit_IT(pd, data + cur_idx, cur_len);
+      err = driver_ops->master_transmit_IT(pd, slave_addr, data + cur_idx, cur_len);
     } else {
-      err = driver_ops->master_transmit_DMA(pd, data + cur_idx, cur_len);
+      err = driver_ops->master_transmit_DMA(pd, slave_addr, data + cur_idx, cur_len);
     }
     if (err) {
       transmitting[pd->name] = 0;
@@ -102,7 +115,7 @@ static errno_t transmit(const Device_I2C *const pd, uint8_t *const data, uint32_
   return ESUCCESS;
 }
 
-static errno_t receive(const Device_I2C *const pd, uint8_t *data, uint32_t len) {
+static errno_t receive(const Device_I2C *const pd, uint16_t slave_addr, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
 
   uint32_t cur_idx = 0;
@@ -120,9 +133,9 @@ static errno_t receive(const Device_I2C *const pd, uint8_t *data, uint32_t len) 
     receiving[pd->name] = 1;
     errno_t err = ESUCCESS;
     if (cur_len == 1) {
-      err = driver_ops->master_receive_IT(pd, data + cur_idx, cur_len);
+      err = driver_ops->master_receive_IT(pd, slave_addr, data + cur_idx, cur_len);
     } else {
-      err = driver_ops->master_receive_DMA(pd, data + cur_idx, cur_len);
+      err = driver_ops->master_receive_DMA(pd, slave_addr, data + cur_idx, cur_len);
     }
     if (err) {
       receiving[pd->name] = 0;
