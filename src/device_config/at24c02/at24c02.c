@@ -7,6 +7,10 @@
 static Device_AT24C02 devices[DEVICE_AT24C02_COUNT] = {
   [DEVICE_AT24C02_1] = {
     .name = DEVICE_AT24C02_1,
+    .addr = 0x50,
+    .size = 0x100,
+    .page_size = 0x08,
+    .page_count = 0x20,
   },
 };
 // 关联的 I2c
