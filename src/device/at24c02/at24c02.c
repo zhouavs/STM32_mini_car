@@ -95,11 +95,10 @@ static errno_t write(const Device_AT24C02 *const pd, uint16_t addr, uint8_t *dat
   err = pd->i2c->ops->transmit(pd->i2c, pd->addr, send_buf, cur_len + 1);
   if (err) return err;
 
-  // 发送空数据, 如果设备响应说明已经写入完成
-  // while (pd->i2c->ops->transmit_empty(pd->i2c, pd->addr) != ESUCCESS) {
-  //   delay_ms(1);
-  // }
-  delay_ms(5);
+  // 等待写入完成
+  while (pd->i2c->ops->is_device_ready(pd->i2c, pd->addr, 10, 1) != ESUCCESS) {
+    delay_ms(1);
+  }
 
   while (len) {
     addr += cur_len;
@@ -119,17 +118,14 @@ static errno_t write(const Device_AT24C02 *const pd, uint16_t addr, uint8_t *dat
       return err;
     }
 
-    delay_ms(5);
+    // 等待写入完成
+    while (pd->i2c->ops->is_device_ready(pd->i2c, pd->addr, 10, 1) != ESUCCESS) {
+      delay_ms(1);
+    }
   }
-
-  // 发送空数据, 如果设备响应说明已经写入完成
-  // while (pd->i2c->ops->transmit_empty(pd->i2c, pd->addr) != ESUCCESS) {
-  //   delay_ms(1);
-  // }
 
   return ESUCCESS;
 }
-
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd) {
   return ((Device_AT24C02 *)pd)->name == *((Device_AT24C02_name *)name);

@@ -7,7 +7,7 @@
 #define MAX_MSG_LEN 0xFFFF
 
 static errno_t init(Device_I2C *const pd);
-static errno_t transmit_empty(Device_I2C *const pd, uint16_t slave_addr);
+static errno_t is_device_ready(const Device_I2C *const pd, uint16_t slave_addr, uint32_t trial_num, uint32_t timeout);
 static errno_t receive(const Device_I2C *const pd, uint16_t slave_addr, uint8_t *data, uint32_t len);
 static errno_t transmit(const Device_I2C *const pd, uint16_t slave_addr, uint8_t *const data, uint32_t len);
 
@@ -15,9 +15,9 @@ static inline uint8_t match_device_by_name(const void *const name, const void *c
 
 static const Device_I2C_ops device_ops = {
   .init = init,
+  .is_device_ready = is_device_ready,
   .receive = receive,
   .transmit = transmit,
-  .transmit_empty = transmit_empty,
 };
 
 static List *list = NULL;
@@ -72,10 +72,10 @@ static errno_t init(Device_I2C *const pd) {
   return ESUCCESS;
 }
 
-static errno_t transmit_empty(Device_I2C *const pd, uint16_t slave_addr) {
+static errno_t is_device_ready(const Device_I2C *const pd, uint16_t slave_addr, uint32_t trial_num, uint32_t timeout) {
   if (pd == NULL) return EINVAL;
 
-  errno_t err = driver_ops->master_transmit(pd, slave_addr, NULL, 0);
+  errno_t err = driver_ops->is_device_ready(pd, slave_addr, trial_num, timeout);
   if (err) return err;
 
   return ESUCCESS;
