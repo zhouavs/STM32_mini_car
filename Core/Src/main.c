@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/pwm/pwm.h"
+#include "src/application/motor/motor.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -103,7 +103,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  pwm_test();
+  // motor_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
