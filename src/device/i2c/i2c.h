@@ -40,5 +40,5 @@ errno_t Device_I2C_module_init(void);
 errno_t Device_I2C_register(Device_I2C *const pd);
 errno_t Device_I2C_find(Device_I2C **pd_ptr, const Device_I2C_name name);
 
-errno_t Device_I2C_TxCpltCallback(const Device_I2C *const pd);
-errno_t Device_I2C_RxCpltCallback(const Device_I2C *const pd);
+errno_t Device_I2C_MasterTxCpltCallback(const Device_I2C *const pd);
+errno_t Device_I2C_MasterRxCpltCallback(const Device_I2C *const pd);

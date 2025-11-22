@@ -97,7 +97,8 @@ static errno_t write(const Device_AT24C02 *const pd, uint16_t addr, uint8_t *dat
 
   // 等待写入完成
   while (pd->i2c->ops->is_device_ready(pd->i2c, pd->addr, 10, 1) != ESUCCESS) {
-    delay_ms(1);
+    err = delay_ms(1);
+    if (err) return err;
   }
 
   while (len) {
@@ -120,7 +121,8 @@ static errno_t write(const Device_AT24C02 *const pd, uint16_t addr, uint8_t *dat
 
     // 等待写入完成
     while (pd->i2c->ops->is_device_ready(pd->i2c, pd->addr, 10, 1) != ESUCCESS) {
-      delay_ms(1);
+      err = delay_ms(1);
+      if (err) return err;
     }
   }
 

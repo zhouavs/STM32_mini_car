@@ -21,7 +21,7 @@ struct Device_timer_ops;
 typedef struct Device_timer {
   const Device_timer_name name;
   const Device_timer_type type;
-  const void *const channel;
+  const void *const instance;
   const struct Device_timer_ops *ops;
 } Device_timer;
 

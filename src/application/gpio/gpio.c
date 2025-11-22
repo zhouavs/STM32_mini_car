@@ -54,7 +54,8 @@ void gpio_test(void) {
       default: break;
     }
 
-    delay_ms(1000);
+    errno_t err = delay_ms(1000);
+    if (err) return;
 
     for (uint8_t i = 0; i < led_count; ++i) {
       leds[i]->ops->write(leds[i], PIN_VALUE_1);

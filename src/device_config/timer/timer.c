@@ -8,12 +8,12 @@ static Device_timer devices[DEVICE_TIMER_COUNT] = {
   [DEVICE_TIMER_SYSTICK] = {
     .name = DEVICE_TIMER_SYSTICK,
     .type = DEVICE_TIMER_TYPE_SYSTICK,
-    .channel = SysTick,
+    .instance = SysTick,
   },
   [DEVICE_TIMER_TIM2] = {
     .name = DEVICE_TIMER_TIM2,
     .type = DEVICE_TIMER_TYPE_GENERAL,
-    .channel = &htim2,
+    .instance = &htim2,
   },
 };
 

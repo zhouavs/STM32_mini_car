@@ -360,13 +360,15 @@ static errno_t hardware_reset(const Device_ST7789V2 *const pd) {
   if (err) return err;
 
   // 最少拉低 10 微秒
-  delay_us(20);
+  err = delay_us(20);
+  if (err) return err;
 
   err = pd->rst->ops->write(pd->rst, PIN_VALUE_1);
   if (err) return err;
 
   // 在非睡眠模式下复位后需要等待 120 毫秒
-  delay_ms(120);
+  err = delay_ms(120);
+  if (err) return err;
 
   return ESUCCESS;
 }
@@ -382,7 +384,8 @@ static errno_t software_reset(const Device_ST7789V2 *const pd) {
   err = write_register(pd, ST7789V2_CMD_SWRESET);
   if (err) goto reset_cs_tag;
 
-  delay_ms(5);
+  err = delay_ms(5);
+  if (err) return err;
 
   err = pd->cs->ops->write(pd->cs, PIN_VALUE_1);
   if (err) return err;
@@ -508,7 +511,8 @@ static errno_t sleep_out(const Device_ST7789V2 *const pd) {
   if (err) goto reset_cs_tag;
 
   // 唤醒后 5 毫秒可以发送除了 SLPIN 以外的命令, 120 毫秒后可以发送 SLPIN 命令
-  delay_ms(5);
+  err = delay_ms(5);
+  if (err) return err;
 
   err = pd->cs->ops->write(pd->cs, PIN_VALUE_1);
   if (err) return err;

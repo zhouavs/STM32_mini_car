@@ -1,4 +1,4 @@
-#include "timer.h"
+#include "pwm.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,11 +20,13 @@
 #include "device_config/at24c02/at24c02.h"
 #include "device/timer/timer.h"
 #include "device_config/timer/timer.h"
+#include "device/pwm/pwm.h"
+#include "device_config/pwm/pwm.h"
 #include "common/delay/delay.h"
 
 static errno_t init(void);
 
-void timer_test() {
+void pwm_test() {
   errno_t err = init();
   if (err) goto print_err_tag;
 
@@ -64,6 +66,20 @@ void timer_test() {
 
   err = pds->ops->refresh_window(pds);
   if (err) goto print_err_tag;
+  
+  const Device_PWM *pdp = NULL;
+  err = Device_PWM_find(&pdp, DEVICE_PWM_TIM_1_CH_1);
+  if (err) goto print_err_tag;
+
+  err = pdp->ops->init(pdp);
+  if (err) goto print_err_tag;
+
+  const uint32_t period = 500000;
+  err = pdp->ops->set_preiod(pdp, period / 2, period);
+  if (err) goto print_err_tag;
+
+  // err = pdp->ops->start(pdp);
+  // if (err) goto print_err_tag;
 
   uint8_t count = 0;
 
@@ -132,6 +148,12 @@ static errno_t init(void) {
   if (err) goto print_err_tag;
   
   err = Device_config_timer_register_all_device();
+  if (err) goto print_err_tag;
+  
+  err = Device_PWM_module_init();
+  if (err) goto print_err_tag;
+
+  err = Device_config_PWM_register_all_device();
   if (err) goto print_err_tag;
 
   return ESUCCESS;

@@ -22,12 +22,12 @@ errno_t Device_config_I2C_register_all_device(void) {
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c) {
   if (hi2c == &hi2c1) {
-    Device_I2C_TxCpltCallback(&devices[DEVICE_I2C_1]);
+    Device_I2C_MasterTxCpltCallback(&devices[DEVICE_I2C_1]);
   }
 }
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
   if (hi2c == &hi2c1) {
-    Device_I2C_RxCpltCallback(&devices[DEVICE_I2C_1]);
+    Device_I2C_MasterRxCpltCallback(&devices[DEVICE_I2C_1]);
   }
 }

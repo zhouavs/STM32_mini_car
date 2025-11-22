@@ -45,7 +45,10 @@ static errno_t delay(uint32_t period_us_num, uint32_t aim_count) {
   uint32_t count = 0;
 
   err = pdt->ops->set_preiod(pdt, period_us_num);
+  if (err) return err;
+
   err = pdt->ops->start(pdt);
+  if (err) return err;
 
   err = pdt->ops->get_count(pdt, &count);
   if (err) return err;

@@ -50,12 +50,12 @@ errno_t Device_I2C_find(Device_I2C **pd_ptr, const Device_I2C_name name) {
   return list->ops->find(list, pd_ptr, &name, match_device_by_name);
 }
 
-errno_t Device_I2C_TxCpltCallback(const Device_I2C *const pd) {
+errno_t Device_I2C_MasterTxCpltCallback(const Device_I2C *const pd) {
   transmitting[pd->name] = 0;
   return ESUCCESS;
 }
 
-errno_t Device_I2C_RxCpltCallback(const Device_I2C *const pd) {
+errno_t Device_I2C_MasterRxCpltCallback(const Device_I2C *const pd) {
   receiving[pd->name] = 0;
   return ESUCCESS;
 }
