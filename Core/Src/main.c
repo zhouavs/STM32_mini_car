@@ -99,6 +99,7 @@ int main(void)
   MX_SPI1_Init();
   MX_I2C1_Init();
   MX_TIM2_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   timer_test();
   /* USER CODE END 2 */
