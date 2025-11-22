@@ -360,7 +360,7 @@ static errno_t hardware_reset(const Device_ST7789V2 *const pd) {
   if (err) return err;
 
   // 最少拉低 10 微秒
-  delay_ms(1);
+  delay_us(20);
 
   err = pd->rst->ops->write(pd->rst, PIN_VALUE_1);
   if (err) return err;

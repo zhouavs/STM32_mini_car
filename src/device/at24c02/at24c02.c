@@ -11,13 +11,13 @@ static errno_t write(const Device_AT24C02 *const pd, uint16_t addr, uint8_t *dat
 // 内部方法 - 查找设备
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
-const Device_AT24C02_ops device_ops = {
+static const Device_AT24C02_ops device_ops = {
   .init = init,
   .read = read,
   .write = write,
 };
 
-List *list = NULL;
+static List *list = NULL;
 
 errno_t Device_AT24C02_module_init(void) {
   if (list == NULL) {

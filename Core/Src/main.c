@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/at24c02/at24c02.h"
+#include "src/application/timer/timer.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -100,7 +100,7 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  at24c02_test();
+  timer_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
