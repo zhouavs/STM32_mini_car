@@ -70,7 +70,7 @@ void timer_test() {
   while (1) {
     err = pds->ops->set_ascii_char(pds, '0' + count, 10, 10, 0x0000, 0xf628);
     err = pds->ops->refresh_window(pds);
-    delay_s(2);
+    delay_s(1);
     ++count;
     if (count >= 10) count = 0;
   }
