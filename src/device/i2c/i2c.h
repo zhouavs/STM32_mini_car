@@ -13,7 +13,7 @@ struct Device_I2C_ops;
 
 typedef struct Device_I2C {
   const Device_I2C_name name;
-  void *const channel;
+  void *const instance;
   uint16_t own_addr;
   const struct Device_I2C_ops *ops;
 } Device_I2C;

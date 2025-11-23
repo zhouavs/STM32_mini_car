@@ -7,7 +7,7 @@
 static Device_SPI devices[DEVICE_SPI_COUNT] = {
   [DEVICE_SPI_1] = {
     .name = DEVICE_SPI_1,
-    .channel = &hspi1,
+    .instance = &hspi1,
   },
 };
 

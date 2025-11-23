@@ -7,7 +7,7 @@
 static Device_USART devices[DEVICE_USART_COUNT] = {
   [DEVICE_USART_DEBUG] = {
     .name = DEVICE_USART_DEBUG,
-    .channel = &huart1,
+    .instance = &huart1,
   },
 };
 

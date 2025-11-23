@@ -7,7 +7,7 @@
 static Device_I2C devices[DEVICE_I2C_COUNT] = {
   [DEVICE_I2C_1] = {
     .name = DEVICE_I2C_1,
-    .channel = &hi2c1,
+    .instance = &hi2c1,
   },
 };
 

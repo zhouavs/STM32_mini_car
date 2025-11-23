@@ -21,19 +21,19 @@ static const Driver_USART_ops ops = {
 
 static errno_t receive(const Device_USART *const pd, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
-  HAL_StatusTypeDef status = HAL_UART_Receive((UART_HandleTypeDef *)pd->channel, data, len, len * 10);
+  HAL_StatusTypeDef status = HAL_UART_Receive((UART_HandleTypeDef *)pd->instance, data, len, len * 10);
   return status == HAL_OK ? ESUCCESS : EIO;
 }
 
 static errno_t transmit(const Device_USART *const pd, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0 || len > 0xFFFF) return EINVAL;
-  HAL_StatusTypeDef status = HAL_UART_Transmit((UART_HandleTypeDef *)pd->channel, data, len, len * 10);
+  HAL_StatusTypeDef status = HAL_UART_Transmit((UART_HandleTypeDef *)pd->instance, data, len, len * 10);
   return status == HAL_OK ? ESUCCESS : EIO;
 }
 
 static errno_t receive_IT(const Device_USART *const pd, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0) return EINVAL;
-  HAL_StatusTypeDef status = HAL_UART_Receive_IT((UART_HandleTypeDef *)pd->channel, data, len);
+  HAL_StatusTypeDef status = HAL_UART_Receive_IT((UART_HandleTypeDef *)pd->instance, data, len);
   if (status == HAL_OK) return ESUCCESS;
   if (status == HAL_BUSY) return EBUSY;
   return EIO;
@@ -41,19 +41,19 @@ static errno_t receive_IT(const Device_USART *const pd, uint8_t *data, uint32_t 
 
 static errno_t transmit_IT(const Device_USART *const pd, uint8_t *data, uint32_t len) {
   if (pd == NULL || data == NULL || len == 0 || len > 0xFFFF) return EINVAL;
-  HAL_StatusTypeDef status = HAL_UART_Transmit_IT((UART_HandleTypeDef *)pd->channel, data, len);
+  HAL_StatusTypeDef status = HAL_UART_Transmit_IT((UART_HandleTypeDef *)pd->instance, data, len);
   if (status == HAL_OK) return ESUCCESS;
   if (status == HAL_BUSY) return EBUSY;
   return EIO;
 }
 
 static errno_t abort_receive(const Device_USART *const pd) {
-  HAL_StatusTypeDef status = HAL_UART_AbortReceive((UART_HandleTypeDef *)pd->channel);
+  HAL_StatusTypeDef status = HAL_UART_AbortReceive((UART_HandleTypeDef *)pd->instance);
   return status == HAL_OK ? ESUCCESS : EIO;
 }
 
 static errno_t abort_transmit(const Device_USART *const pd) {
-  HAL_StatusTypeDef state = HAL_UART_AbortTransmit((UART_HandleTypeDef *)pd->channel);
+  HAL_StatusTypeDef state = HAL_UART_AbortTransmit((UART_HandleTypeDef *)pd->instance);
   return state == HAL_OK ? ESUCCESS : EIO;
 }
 
