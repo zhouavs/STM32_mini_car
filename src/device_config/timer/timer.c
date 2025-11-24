@@ -1,6 +1,5 @@
 #include "timer.h"
 #include "stm32f4xx_hal.h"
-#include "device/timer/timer.h"
 #include "driver/timer/timer.h"
 #include "Core/Inc/tim.h"
 
@@ -18,8 +17,11 @@ static Device_timer devices[DEVICE_TIMER_COUNT] = {
 };
 
 errno_t Device_config_timer_register_all_device(void) {
+  errno_t err = Device_timer_module_init();
+  if (err) return err;
+  
   for (Device_timer_name name = 0; name < DEVICE_TIMER_COUNT; ++name) {
-    errno_t err = Device_timer_register(&devices[name]);
+    err = Device_timer_register(&devices[name]);
     if (err) return err;
   }
 

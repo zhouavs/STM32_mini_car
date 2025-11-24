@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/servo/servo.h"
+#include "src/application/speed_test/speed_test.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -103,7 +103,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  servo_test();
+  // speed_test_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

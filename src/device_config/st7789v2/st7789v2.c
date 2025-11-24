@@ -1,7 +1,6 @@
 #include "st7789v2.h"
 #include "device/st7789v2/st7789v2.h"
 #include "device/gpio/gpio.h"
-#include "device/spi/spi.h"
 #include <stdlib.h>
 
 static Device_ST7789V2 devices[DEVICE_ST7789V2_COUNT] = {
@@ -34,9 +33,10 @@ static const Device_SPI_name relate_spi[DEVICE_ST7789V2_COUNT] = {
 };
 
 errno_t Device_config_ST7789V2_register_all_device(void) {
+  errno_t err = Device_ST7789V2_module_init();
+  if (err) return err;
+  
   for (Device_ST7789V2_name name = 0; name < DEVICE_ST7789V2_COUNT; ++name) {
-    errno_t err = ESUCCESS;
-
     err = Device_GPIO_find(&devices[name].cs, relate_cs[name]);
     if (err) return err;
     err = Device_GPIO_find(&devices[name].dc, relate_dc[name]);

@@ -1,6 +1,5 @@
 #include "spi.h"
 #include "stm32f4xx_hal.h"
-#include "device/spi/spi.h"
 #include "driver/spi/spi.h"
 #include "Core/Inc/spi.h"
 
@@ -12,8 +11,11 @@ static Device_SPI devices[DEVICE_SPI_COUNT] = {
 };
 
 errno_t Device_config_SPI_register_all_device(void) {
+  errno_t err = Device_SPI_module_init();
+  if (err) return err;
+  
   for (Device_SPI_name name = 0; name < DEVICE_SPI_COUNT; ++name) {
-    errno_t err = Device_SPI_register(&devices[name]);
+    err = Device_SPI_register(&devices[name]);
     if (err) return err;
   }
 

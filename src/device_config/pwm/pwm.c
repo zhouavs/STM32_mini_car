@@ -1,6 +1,5 @@
 #include "pwm.h"
 #include "stm32f4xx_hal.h"
-#include "device/pwm/pwm.h"
 #include "driver/pwm/pwm.h"
 #include "Core/Inc/tim.h"
 
@@ -38,8 +37,11 @@ static Device_PWM devices[DEVICE_PWM_COUNT] = {
 };
 
 errno_t Device_config_PWM_register_all_device(void) {
+  errno_t err = Device_PWM_module_init();
+  if (err) return err;
+  
   for (Device_PWM_name name = 0; name < DEVICE_PWM_COUNT; ++name) {
-    errno_t err = Device_PWM_register(&devices[name]);
+    err = Device_PWM_register(&devices[name]);
     if (err) return err;
   }
 

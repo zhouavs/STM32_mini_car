@@ -1,5 +1,4 @@
 #include "servo.h"
-#include "device/servo/servo.h"
 #include "device/pwm/pwm.h"
 #include <stdlib.h>
 
@@ -16,9 +15,10 @@ static const Device_PWM_name relate_pwm[DEVICE_SERVO_COUNT] = {
 };
 
 errno_t Device_config_servo_register_all_device(void) {
+  errno_t err = Device_servo_module_init();
+  if (err) return err;
+  
   for (Device_servo_name name = 0; name < DEVICE_SERVO_COUNT; ++name) {
-    errno_t err = ESUCCESS;
-
     err = Device_PWM_find(&devices[name].pwm, relate_pwm[name]);
 
     err = Device_servo_register(&devices[name]);

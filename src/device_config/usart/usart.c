@@ -1,6 +1,5 @@
 #include "usart.h"
 #include "stm32f4xx_hal.h"
-#include "device/usart/usart.h"
 #include "driver/usart/usart.h"
 #include "Core/Inc/usart.h"
 
@@ -12,8 +11,11 @@ static Device_USART devices[DEVICE_USART_COUNT] = {
 };
 
 errno_t Device_config_USART_register_all_device(void) {
+  errno_t err = Device_USART_module_init();
+  if (err) return err;
+  
   for (Device_USART_name name = 0; name < DEVICE_USART_COUNT; ++name) {
-    errno_t err = Device_USART_register(&devices[name]);
+    err = Device_USART_register(&devices[name]);
     if (err) return err;
   }
 

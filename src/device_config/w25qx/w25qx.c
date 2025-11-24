@@ -1,5 +1,4 @@
 #include "w25qx.h"
-#include "device/w25qx/w25qx.h"
 #include "device/gpio/gpio.h"
 #include "device/spi/spi.h"
 #include <stdlib.h>
@@ -19,9 +18,10 @@ static const Device_SPI_name relate_spi[DEVICE_W25QX_COUNT] = {
 };
 
 errno_t Device_config_W25QX_register_all_device(void) {
+  errno_t err = Device_W25QX_module_init();
+  if (err) return err;
+  
   for (Device_W25QX_name name = 0; name < DEVICE_W25QX_COUNT; ++name) {
-    errno_t err = ESUCCESS;
-
     err = Device_GPIO_find(&devices[name].cs, relate_cs[name]);
     if (err) return err;
     err = Device_SPI_find(&devices[name].spi, relate_spi[name]);

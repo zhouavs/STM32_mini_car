@@ -50,6 +50,6 @@ typedef struct Driver_timer_ops {
 
 errno_t Device_timer_module_init(void);
 errno_t Device_timer_register(Device_timer *const pd);
-errno_t Device_timer_find(const Device_timer **pd_ptr, const Device_timer_name name);
+errno_t Device_timer_find(Device_timer **pd_ptr, const Device_timer_name name);
 
 errno_t Device_timer_PeriodElapsedCallback(const Device_timer *const pd);

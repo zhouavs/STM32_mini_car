@@ -27,7 +27,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -55,6 +55,7 @@ void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
+void EXTI0_IRQHandler(void);
 void EXTI2_IRQHandler(void);
 void EXTI3_IRQHandler(void);
 void EXTI4_IRQHandler(void);
@@ -69,6 +70,12 @@ void DMA2_Stream0_IRQHandler(void);
 void DMA2_Stream3_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
+extern EXTI_HandleTypeDef hexti0;
+extern EXTI_HandleTypeDef hexti1;
+extern EXTI_HandleTypeDef hexti2;
+extern EXTI_HandleTypeDef hexti3;
+extern EXTI_HandleTypeDef hexti4;
+extern EXTI_HandleTypeDef hexti5;
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

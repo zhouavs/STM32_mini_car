@@ -29,7 +29,7 @@ static errno_t is_running(const Device_timer *const pd, bool *rt_running_ptr) {
 
   switch (pd->type) {
     case DEVICE_TIMER_TYPE_SYSTICK:
-      *rt_running_ptr = (((SysTick_Type *)pd->instance)->CTRL & SysTick_CTRL_ENABLE_Msk) != 0;
+      *rt_running_ptr = (((SysTick_Type *)pd->instance)->CTRL & SysTick_CTRL_TICKINT_Msk) != 0;
       return ESUCCESS;
     case DEVICE_TIMER_TYPE_GENERAL:
       *rt_running_ptr = (((TIM_HandleTypeDef *)pd->instance)->Instance->CR1 & TIM_CR1_CEN) != 0;

@@ -1,6 +1,5 @@
 #include "i2c.h"
 #include "stm32f4xx_hal.h"
-#include "device/i2c/i2c.h"
 #include "driver/i2c/i2c.h"
 #include "Core/Inc/i2c.h"
 
@@ -12,8 +11,11 @@ static Device_I2C devices[DEVICE_I2C_COUNT] = {
 };
 
 errno_t Device_config_I2C_register_all_device(void) {
+  errno_t err = Device_I2C_module_init();
+  if (err) return err;
+
   for (Device_I2C_name name = 0; name < DEVICE_I2C_COUNT; ++name) {
-    errno_t err = Device_I2C_register(&devices[name]);
+    err = Device_I2C_register(&devices[name]);
     if (err) return err;
   }
 

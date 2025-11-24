@@ -55,7 +55,7 @@ errno_t Device_timer_register(Device_timer *const pd) {
   return ESUCCESS;
 }
 
-errno_t Device_timer_find(const Device_timer **pd_ptr, const Device_timer_name name) {
+errno_t Device_timer_find(Device_timer **pd_ptr, const Device_timer_name name) {
   if (list == NULL) return EINVAL;
 
   errno_t err = list->ops->find(list, pd_ptr, &name, match_device_by_name);

@@ -1,5 +1,4 @@
 #include "at24c02.h"
-#include "device/at24c02/at24c02.h"
 #include "device/gpio/gpio.h"
 #include "device/i2c/i2c.h"
 #include <stdlib.h>
@@ -19,8 +18,10 @@ static const Device_I2C_name relate_i2c[DEVICE_AT24C02_COUNT] = {
 };
 
 errno_t Device_config_AT24C02_register_all_device(void) {
+  errno_t err = Device_AT24C02_module_init();
+  if (err) return err;
+  
   for (Device_AT24C02_name name = 0; name < DEVICE_AT24C02_COUNT; ++name) {
-    errno_t err = ESUCCESS;
 
     err = Device_I2C_find(&devices[name].i2c, relate_i2c[name]);
     if (err) return err;
