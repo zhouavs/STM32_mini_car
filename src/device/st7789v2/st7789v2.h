@@ -39,8 +39,8 @@ typedef struct Device_ST7789V2_ops {
   errno_t (*set_display_memory)(Device_ST7789V2 *const pd, uint8_t *memory_ptr, uint32_t memory_size);
   errno_t (*set_window)(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x);
   errno_t (*set_pixel)(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, color_t color);
-  errno_t (*set_ascii_char)(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color, uint16_t background_color);
-  errno_t (*set_ascii_str)(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color, color_t background_color);
+  errno_t (*set_ascii_char)(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color);
+  errno_t (*set_ascii_str)(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color);
   errno_t (*fill_window)(Device_ST7789V2 *const pd, color_t color);
   errno_t (*refresh_window)(const Device_ST7789V2 *const pd);
   errno_t (*clear_screen)(Device_ST7789V2 *const pd, color_t color);

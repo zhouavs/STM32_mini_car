@@ -80,10 +80,7 @@ void speed_test_test(void) {
   err = pdm_hl->ops->init(pdm_hl);
   if (err) goto err_tag;
 
-  err = pdm_hl->ops->set_speed(pdm_hl, 0x30);
-  if (err) goto err_tag;
-
-  err = pdm_hl->ops->forward(pdm_hl);
+  err = pdm_hl->ops->forward(pdm_hl, 0x30);
   if (err) goto err_tag;
 
   err = pdst_hl->ops->init(pdst_hl);
@@ -97,7 +94,7 @@ void speed_test_test(void) {
     if (err) goto err_tag;
 
     snprintf((char *)speed_str, 20, "speed: %0.3f", speed);
-    err = pds->ops->set_ascii_str(pds, speed_str, strlen((char *)speed_str), 0, 0, 0x0000, window_background_color);
+    err = pds->ops->set_ascii_str(pds, speed_str, strlen((char *)speed_str), 0, 0, 0x0000);
     if (err) goto err_tag;
 
     err = pds->ops->refresh_window(pds);

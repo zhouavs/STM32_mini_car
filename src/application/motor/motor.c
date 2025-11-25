@@ -44,12 +44,10 @@ void motor_test() {
 
   uint8_t i = 0;
   while (1) {
-    err = pms[i]->ops->set_speed(pms[i], 0x40);
-    if (err) goto print_err_tag;
-    err = pms[i]->ops->forward(pms[i]);
+    err = pms[i]->ops->forward(pms[i], 0x40);
     if (err) goto print_err_tag;
     delay_s(2);
-    err = pms[i]->ops->backward(pms[i]);
+    err = pms[i]->ops->backward(pms[i], 0x40);
     if (err) goto print_err_tag;
     delay_s(2);
     err = pms[i]->ops->stop(pms[i]);

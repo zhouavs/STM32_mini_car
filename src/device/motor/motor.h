@@ -36,10 +36,9 @@ typedef struct Device_motor {
 
 typedef struct Device_motor_ops {
   errno_t (*init)(Device_motor *const pd);
-  errno_t (*set_speed)(Device_motor *const pd, const speed_t speed);
   errno_t (*stop)(Device_motor *const pd);
-  errno_t (*forward)(Device_motor *const pd);
-  errno_t (*backward)(Device_motor *const pd);
+  errno_t (*forward)(Device_motor *const pd, const speed_t speed);
+  errno_t (*backward)(Device_motor *const pd, const speed_t speed);
 } Device_motor_ops;
 
 // 全局方法

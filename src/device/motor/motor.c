@@ -3,20 +3,19 @@
 #include "common/delay/delay.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 // 对象方法
 static errno_t init(Device_motor *const pd);
-static errno_t set_speed(Device_motor *const pd, const speed_t speed);
 static errno_t stop(Device_motor *const pd);
-static errno_t forward(Device_motor *const pd);
-static errno_t backward(Device_motor *const pd);
+static errno_t forward(Device_motor *const pd, const speed_t speed);
+static errno_t backward(Device_motor *const pd, const speed_t speed);
 
 // 内部方法 - 查找设备
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
 static const Device_motor_ops device_ops = {
   .init = init,
-  .set_speed = set_speed,
   .stop = stop,
   .forward = forward,
   .backward = backward,
@@ -71,17 +70,6 @@ static errno_t init(Device_motor *const pd) {
   return ESUCCESS;
 }
 
-static errno_t set_speed(Device_motor *const pd, const speed_t speed) {
-  if (pd == NULL) return EINVAL;
-
-  errno_t err = pd->pwm->ops->set_preiod(pd->pwm, speed, 0xFF);
-  if (err) return err;
-
-  pd->speed = speed;
-
-  return ESUCCESS;
-}
-
 static errno_t stop(Device_motor *const pd) {
   if (pd == NULL) return EINVAL;
 
@@ -99,39 +87,53 @@ static errno_t stop(Device_motor *const pd) {
   return ESUCCESS;
 }
 
-static errno_t forward(Device_motor *const pd) {
+static errno_t forward(Device_motor *const pd, const speed_t speed) {
   if (pd == NULL) return EINVAL;
 
   errno_t err = ESUCCESS;
 
-  err = pd->pwm->ops->stop(pd->pwm);
+  err = pd->pwm->ops->set_period(pd->pwm, speed, 0xFF);
   if (err) return err;
   err = pd->in_1->ops->write(pd->in_1, PIN_VALUE_1);
   if (err) return err;
   err = pd->in_2->ops->write(pd->in_2, PIN_VALUE_0);
   if (err) return err;
-  err = pd->pwm->ops->start(pd->pwm);
-  if (err) return err;
 
+  bool running = false;
+  err = pd->pwm->ops->is_running(pd->pwm, &running);
+  if (err) return err;
+  if (running == false) {
+    err = pd->pwm->ops->start(pd->pwm);
+    if (err) return err;
+  }
+
+  pd->speed = speed;
   pd->status = DEVICE_MOTOR_STATUS_FORWARD;
 
   return ESUCCESS;
 }
 
-static errno_t backward(Device_motor *const pd) {
+static errno_t backward(Device_motor *const pd, const speed_t speed) {
   if (pd == NULL) return EINVAL;
 
   errno_t err = ESUCCESS;
 
-  err = pd->pwm->ops->stop(pd->pwm);
+  err = pd->pwm->ops->set_period(pd->pwm, speed, 0xFF);
   if (err) return err;
   err = pd->in_1->ops->write(pd->in_1, PIN_VALUE_0);
   if (err) return err;
   err = pd->in_2->ops->write(pd->in_2, PIN_VALUE_1);
   if (err) return err;
-  err = pd->pwm->ops->start(pd->pwm);
-  if (err) return err;
 
+  bool running = false;
+  err = pd->pwm->ops->is_running(pd->pwm, &running);
+  if (err) return err;
+  if (running == false) {
+    err = pd->pwm->ops->start(pd->pwm);
+    if (err) return err;
+  }
+  
+  pd->speed = speed;
   pd->status = DEVICE_MOTOR_STATUS_BACKWARD;
 
   return ESUCCESS;

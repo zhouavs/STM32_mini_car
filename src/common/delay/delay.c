@@ -26,7 +26,7 @@ errno_t delay_us(uint32_t us) {
  * @return 错误信息
  */
 static errno_t delay(uint32_t period_us_num, uint32_t aim_count) {
-  const Device_timer *pdt = NULL;
+  Device_timer *pdt = NULL;
   errno_t err = ESUCCESS;
 
   // 定时器在 start 中会重置计数为 0, 不需要人为 +1; 之前的 +1 会造成多延时一周期 (例如 1 秒变 2 秒)
@@ -44,7 +44,7 @@ static errno_t delay(uint32_t period_us_num, uint32_t aim_count) {
 
   uint32_t count = 0;
 
-  err = pdt->ops->set_preiod(pdt, period_us_num);
+  err = pdt->ops->set_period(pdt, period_us_num);
   if (err) return err;
 
   err = pdt->ops->start(pdt);

@@ -10,10 +10,11 @@ static errno_t is_running(const Device_timer *const pd, bool *rt_running_ptr);
 static errno_t start(const Device_timer *const pd);
 static errno_t stop(const Device_timer *const pd);
 static errno_t get_count(const Device_timer *const pd, uint32_t *rt_count_ptr);
-static errno_t set_preiod(const Device_timer *const pd, uint32_t value);
+static errno_t set_period(const Device_timer *const pd, uint32_t value);
 static errno_t set_prescaler(const Device_timer *const pd, uint16_t value);
 static errno_t set_clock_division(const Device_timer *const pd, uint8_t value);
 static errno_t set_auto_reload_register(const Device_timer *const pd, uint32_t value);
+static errno_t set_period_elapsed_callback(Device_timer *const pd, Device_timer_callback *callback);
 
 // 内部方法 - 查找设备
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
@@ -24,10 +25,11 @@ static const Device_timer_ops device_ops = {
   .start = start,
   .stop = stop,
   .get_count = get_count,
-  .set_preiod = set_preiod,
+  .set_period = set_period,
   .set_prescaler = set_prescaler,
   .set_clock_division = set_clock_division,
   .set_auto_reload_register = set_auto_reload_register,
+  .set_period_elapsed_callback = set_period_elapsed_callback,
 };
 
 static const Driver_timer_ops *driver_ops = NULL;
@@ -66,6 +68,10 @@ errno_t Device_timer_find(Device_timer **pd_ptr, const Device_timer_name name) {
 
 errno_t Device_timer_PeriodElapsedCallback(const Device_timer *const pd) {
   ++timer_count[pd->name];
+  // 如果关联了其他回调函数, 执行该回调函数
+  if (pd->period_elapsed_callback != NULL) {
+    return pd->period_elapsed_callback();
+  }
   return ESUCCESS;
 }
 
@@ -118,7 +124,7 @@ static errno_t get_count(const Device_timer *const pd, uint32_t *rt_count_ptr) {
   return EINVAL;
 }
 
-static errno_t set_preiod(const Device_timer *const pd, uint32_t us) {
+static errno_t set_period(const Device_timer *const pd, uint32_t us) {
   if (pd == NULL || driver_ops == NULL) return EINVAL;
   errno_t err = ESUCCESS;
 
@@ -147,18 +153,24 @@ static errno_t set_preiod(const Device_timer *const pd, uint32_t us) {
 }
 
 static errno_t set_prescaler(const Device_timer *const pd, uint16_t value) {
-  if (pd == NULL || driver_ops == NULL) return EINVAL;
+  if (pd == NULL) return EINVAL;
   return driver_ops->set_prescaler(pd, value);
 }
 
 static errno_t set_clock_division(const Device_timer *const pd, uint8_t value) {
-  if (pd == NULL || driver_ops == NULL) return EINVAL;
+  if (pd == NULL) return EINVAL;
   return driver_ops->set_clock_division(pd, value);
 }
 
 static errno_t set_auto_reload_register(const Device_timer *const pd, uint32_t value) {
-  if (pd == NULL || driver_ops == NULL) return EINVAL;
+  if (pd == NULL) return EINVAL;
   return driver_ops->set_auto_reload_register(pd, value);
+}
+
+static errno_t set_period_elapsed_callback(Device_timer *const pd, Device_timer_callback *callback) {
+  if (pd == NULL || callback == NULL) return EINVAL;
+  pd->period_elapsed_callback = callback;
+  return ESUCCESS;
 }
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd) {

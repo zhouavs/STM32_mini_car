@@ -14,8 +14,8 @@ static errno_t off(const Device_ST7789V2 *const pd);
 static errno_t set_display_memory(Device_ST7789V2 *const pd, uint8_t *memory_ptr, uint32_t memory_size);
 static errno_t set_window(Device_ST7789V2 *const pd, uint16_t start_y, uint16_t start_x, uint16_t end_y, uint16_t end_x);
 static errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x, color_t color);
-static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color, uint16_t background_color);
-static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color, color_t background_color);
+static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color);
+static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color);
 static errno_t fill_window(Device_ST7789V2 *const pd, color_t color);
 static errno_t refresh_window(const Device_ST7789V2 *const pd);
 static errno_t clear_screen(Device_ST7789V2 *const pd, color_t color);
@@ -201,7 +201,7 @@ static errno_t set_pixel(const Device_ST7789V2 *const pd, uint16_t y, uint16_t x
   return ESUCCESS;
 }
 
-static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color, uint16_t background_color) {
+static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y, uint16_t start_x, uint16_t color) {
   if (pds == NULL) return EINVAL;
   if (ch >= ASCII_CHAR_COUNT) return EINVAL;
 
@@ -224,13 +224,9 @@ static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y
 
   for (uint8_t move_y = 0; move_y < height; ++move_y) {
     for (uint8_t move_x = 0; move_x < width; ++move_x) {
-      color_t pixel_color = 0;
       if ((*font)[move_y] & (1 << move_x)) {
-        pixel_color = color;
-      } else {
-        pixel_color = background_color;
+        err = pds->ops->set_pixel(pds, start_y + move_y, start_x + move_x, color);
       }
-      err = pds->ops->set_pixel(pds, start_y + move_y, start_x + move_x, pixel_color);
       if (err) return err;
     }
   }
@@ -238,7 +234,7 @@ static errno_t set_ascii_char(Device_ST7789V2 *pds, uint8_t ch, uint16_t start_y
   return ESUCCESS;
 }
 
-static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color, color_t background_color) {
+static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uint32_t len, uint16_t start_y, uint16_t start_x, color_t color) {
   if (pds == NULL) return EINVAL;
 
   // 如果起始纵坐标超出屏幕范围, 那就什么都不做
@@ -265,7 +261,7 @@ static errno_t set_ascii_str(Device_ST7789V2 *pds, const uint8_t *const str, uin
       break;
     }
   
-    set_ascii_char(pds, str[i], cur_y, cur_x, color, background_color);
+    set_ascii_char(pds, str[i], cur_y, cur_x, color);
     cur_x += ASCII_CHAR_WIDTH;
   }
 

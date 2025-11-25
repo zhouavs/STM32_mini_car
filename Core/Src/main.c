@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/speed_test/speed_test.h"
+#include "src/application/tracker/tracker.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -104,7 +104,7 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  // speed_test_test();
+  tracker_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

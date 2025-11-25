@@ -135,6 +135,41 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
     .pin = GPIO_PIN_5,
     .exti_handle = &hexti5,
   },
+  [DEVICE_TRACKER_IN_1] = {
+    .name = DEVICE_TRACKER_IN_1,
+    .port = GPIOC,
+    .pin = GPIO_PIN_2,
+  }, 
+  [DEVICE_TRACKER_IN_2] = {
+    .name = DEVICE_TRACKER_IN_2,
+    .port = GPIOC,
+    .pin = GPIO_PIN_3,
+  }, 
+  [DEVICE_TRACKER_IN_3] = {
+    .name = DEVICE_TRACKER_IN_3,
+    .port = GPIOC,
+    .pin = GPIO_PIN_4,
+  }, 
+  [DEVICE_TRACKER_IN_4] = {
+    .name = DEVICE_TRACKER_IN_4,
+    .port = GPIOC,
+    .pin = GPIO_PIN_5,
+  }, 
+  [DEVICE_TRACKER_IN_5] = {
+    .name = DEVICE_TRACKER_IN_5,
+    .port = GPIOF,
+    .pin = GPIO_PIN_6,
+  }, 
+  [DEVICE_TRACKER_IN_6] = {
+    .name = DEVICE_TRACKER_IN_6,
+    .port = GPIOF,
+    .pin = GPIO_PIN_7,
+  }, 
+  [DEVICE_TRACKER_IN_7] = {
+    .name = DEVICE_TRACKER_IN_7,
+    .port = GPIOF,
+    .pin = GPIO_PIN_8,
+  },
 };
 
 errno_t Device_config_GPIO_register_all_device(void) {

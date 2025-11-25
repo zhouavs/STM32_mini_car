@@ -49,7 +49,7 @@ void font_test(void) {
   if (err) goto print_err_tag;
 
   const char *const str = "Akemi Homura love Kaname Modoka\r\nNagasaki Soyo\r\nAnon Tokyo\r\nTogawa Sakiko\r\n";
-  err = pds->ops->set_ascii_str(pds, (uint8_t *)str, strlen(str), 0, 0, 0x0000, 0xf628);
+  err = pds->ops->set_ascii_str(pds, (uint8_t *)str, strlen(str), 0, 0, 0x0000);
   if (err) goto print_err_tag;
 
   err = pds->ops->refresh_window(pds);

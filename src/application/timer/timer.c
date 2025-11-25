@@ -68,7 +68,7 @@ void timer_test() {
   uint8_t count = 0;
 
   while (1) {
-    err = pds->ops->set_ascii_char(pds, '0' + count, 10, 10, 0x0000, 0xf628);
+    err = pds->ops->set_ascii_char(pds, '0' + count, 10, 10, 0x0000);
     err = pds->ops->refresh_window(pds);
     err = delay_s(1);
     if (err) goto print_err_tag;

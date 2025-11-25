@@ -4,6 +4,8 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+typedef errno_t Device_timer_callback(void);
+
 typedef enum {
   DEVICE_TIMER_SYSTICK,
   DEVICE_TIMER_TIM2,
@@ -23,6 +25,7 @@ typedef struct Device_timer {
   const Device_timer_name name;
   const Device_timer_type type;
   const void *const instance;
+  Device_timer_callback *period_elapsed_callback;
   const struct Device_timer_ops *ops;
 } Device_timer;
 
@@ -32,10 +35,11 @@ typedef struct Device_timer_ops {
   errno_t (*start)(const Device_timer *const pd);
   errno_t (*stop)(const Device_timer *const pd);
   errno_t (*get_count)(const Device_timer *const pd, uint32_t *rt_count_ptr);
-  errno_t (*set_preiod)(const Device_timer *const pd, uint32_t us);
+  errno_t (*set_period)(const Device_timer *const pd, uint32_t us);
   errno_t (*set_prescaler)(const Device_timer *const pd, uint16_t value);
   errno_t (*set_clock_division)(const Device_timer *const pd, uint8_t value);
   errno_t (*set_auto_reload_register)(const Device_timer *const pd, uint32_t value);
+  errno_t (*set_period_elapsed_callback)(Device_timer *const pd, Device_timer_callback *callback);
 } Device_timer_ops;
 
 typedef struct Driver_timer_ops {

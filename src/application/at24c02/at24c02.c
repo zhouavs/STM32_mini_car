@@ -83,7 +83,7 @@ void at24c02_test() {
   err = pda->ops->read(pda, 0x00, r_data, r_data_len);
   if (err) goto print_err_tag;
 
-  err = pds->ops->set_ascii_str(pds, r_data, r_data_len - 1, 0, 0, 0x00, 0xf628);
+  err = pds->ops->set_ascii_str(pds, r_data, r_data_len - 1, 0, 0, 0x00);
   if (err) goto print_err_tag;
 
   err = pds->ops->refresh_window(pds);

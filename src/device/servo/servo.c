@@ -66,7 +66,7 @@ static errno_t set_angle(Device_servo *const pd, const angle_t angle) {
 
   // 周期为 20ms, 其中高电平为 0.5ms 时朝向最左边(-90), 1.5 ms 朝向中间(0), 2.5ms 朝向右边(90)
   const uint32_t pulse = 1500 + angle * 1000 / 90; 
-  errno_t err = pd->pwm->ops->set_preiod(pd->pwm, pulse, 20000);
+  errno_t err = pd->pwm->ops->set_period(pd->pwm, pulse, 20000);
   if (err) return err;
 
   pd->angle = angle;

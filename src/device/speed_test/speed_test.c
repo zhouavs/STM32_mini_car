@@ -68,7 +68,7 @@ static errno_t init(Device_speed_test *const pd) {
 
   // 如果采用通用计时器, 那么设定事件单位为 1 毫秒, 因为滴答定时器默认为 1 毫秒且无法更改, 此处保持一致
   if (pd->timer->type == DEVICE_TIMER_TYPE_GENERAL) {
-    err = pd->timer->ops->set_preiod(pd->timer, 1000);
+    err = pd->timer->ops->set_period(pd->timer, 1000);
     if (err) return err;
   }
 

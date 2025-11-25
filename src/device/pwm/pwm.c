@@ -9,7 +9,7 @@ static errno_t init(const Device_PWM *const pd);
 static errno_t is_running(const Device_PWM *const pd, bool *rt_running_ptr);
 static errno_t start(const Device_PWM *const pd);
 static errno_t stop(const Device_PWM *const pd);
-static errno_t set_preiod(const Device_PWM *const pd, uint32_t up_us, uint32_t total_us);
+static errno_t set_period(const Device_PWM *const pd, uint32_t up_us, uint32_t total_us);
 
 // 内部方法 - 查找设备
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
@@ -19,7 +19,7 @@ static const Device_PWM_ops device_ops = {
   .is_running = is_running,
   .start = start,
   .stop = stop,
-  .set_preiod = set_preiod,
+  .set_period = set_period,
 };
 
 static const Driver_pwm_ops *driver_ops = NULL;
@@ -85,7 +85,7 @@ static errno_t stop(const Device_PWM *const pd) {
   return driver_ops->stop(pd);
 }
 
-static errno_t set_preiod(const Device_PWM *const pd, uint32_t pre_us, uint32_t total_us) {
+static errno_t set_period(const Device_PWM *const pd, uint32_t pre_us, uint32_t total_us) {
   if (pd == NULL || driver_ops == NULL) return EINVAL;
   errno_t err = ESUCCESS;
 
