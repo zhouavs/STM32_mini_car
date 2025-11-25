@@ -126,14 +126,21 @@ static errno_t set_preiod(const Device_timer *const pd, uint32_t us) {
   err = driver_ops->get_source_frequent(pd, &frequent);
   if (err) return err;
 
-  // 预分频之后的周期为半微秒
+  // 如果传入的 us 参数为 1
+  // 设置预分频之后的周期为半微秒
   // 因为如果周期设置为 1 微秒的话, 在进行微秒级计数的时候 set_auto_reload_register 的值得设置为 us - 1 也就是 0
   // 但设置为 0 时无法不会产生有效的溢出事件, 不会出发 HAL_TIM_PeriodElapsedCallback  回调
-  err = driver_ops->set_prescaler(pd, frequent / (1000000 * 2) - 1);
+  frequent /= 1000000;
+  if (us == 1) {
+    frequent /= 2;
+    us *= 2;
+  }
+
+  err = driver_ops->set_prescaler(pd, frequent - 1);
   if (err) return err;
 
   // 与此同时, 自动装载寄存器也得设置为微秒数 * 2
-  err = driver_ops->set_auto_reload_register(pd, us * 2 - 1);
+  err = driver_ops->set_auto_reload_register(pd, us - 1);
   if (err) return err;
 
   return ESUCCESS;
