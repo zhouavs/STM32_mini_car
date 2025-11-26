@@ -57,9 +57,15 @@ void tracker_test(void) {
   err = Device_tracker_find(&pdt, DEVICE_TRACKER_1);
   if (err) goto err_tag;
   err = pdt->ops->init(pdt);
-  if (err) goto err_tag;  
+  if (err) goto err_tag;
 
-  while (1);
+  while (1) {
+    // uint8_t center = 0;
+    // err = pdt->ops->get_line_center(pdt, &center);
+    // if (err) goto err_tag;
+    // printf("tracker_value\r\nin line: %d\r\nline center: %d\r\n", (center & 0x80) >> 7, center & 0x7F);
+    // delay_s(1);
+  }
 
   err_tag:
   while (1);

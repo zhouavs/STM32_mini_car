@@ -111,14 +111,19 @@ static errno_t get_line_center(Device_tracker *const pd, uint8_t *rt_direction_p
   }
 
   // 中间点为 从左向右最前一个检测到轨迹的点 + (从左向右最后一个检测到轨迹的点 - 从左向右最前一个检测到轨迹的点) / 2
-  uint8_t l = 0, r = DEVICE_TRACKER_IN_COUNT - 1;
-  while ((ins_value & (1 << l)) == 0) {
-    ++l;
+  uint8_t left = 0, right = DEVICE_TRACKER_IN_COUNT - 1;
+  while ((ins_value & (1 << left)) == 0) ++left;
+  while ((ins_value & (1 << right)) == 0) --right;
+  uint8_t diff = right - left;
+  if (diff % 2 == 1) {
+    // 最左到到最右的差值为奇数, 说明宽度(差值+1)为偶数, 无法取到正中点
+    // 如果轨迹左边离边沿更近, 则偏移值向左, 如果轨迹右边离边沿更近, 则偏移值向右. 如果轨迹两边离边沿距离相等, 偏移值向左(不过这种情况只有在探头为偶数的情况下会出现, 本设备探头为7个, 不会出现这种情况)
+    // 需要考虑偏移值向左还是向右, 由于除以2操作是向下取整, 偏移值向右需要加1, 偏移值向左不需要加
+    if (left > DEVICE_TRACKER_IN_COUNT - 1 - right) {
+      diff += 1;
+    }
   }
-  while ((ins_value & (1 << r)) == 0) {
-    --r;
-  }
-  *rt_direction_ptr = (1 << 7) | ((l + (r - l) / 2) & 0x7F);
+  *rt_direction_ptr = (1 << 7) | ((left + diff / 2) & 0x7F);
   return ESUCCESS;
 }
 
