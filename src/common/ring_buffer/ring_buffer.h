@@ -9,8 +9,8 @@ struct Ring_buffer_ops;
 typedef struct Ring_buffer {
   uint8_t *data;
   uint32_t size;
-  uint32_t head;
-  uint32_t len;
+  volatile uint32_t read_index;
+  volatile uint32_t write_index;
   const struct Ring_buffer_ops *ops;
 } Ring_buffer;
 
