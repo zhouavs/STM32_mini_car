@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/tracker/tracker.h"
+#include "src/application/irda/irda.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -103,8 +103,9 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM3_Init();
   MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  tracker_test();
+  irda_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -97,7 +97,7 @@ static errno_t transmit(const Device_USART *const pd, uint8_t *data, uint32_t le
 
 static errno_t receive(const Device_USART *const pd, uint8_t *data, uint32_t *data_len, uint32_t len) {
   if (pd == NULL || data == NULL || data_len == NULL || len == 0) return EINVAL;
-  Ring_buffer *rb = ring_buffers[pd->name];
+  Ring_buffer *const rb = ring_buffers[pd->name];
   if (rb == NULL) return EINVAL;
   return rb->ops->read(rb, data, data_len, len);
 }

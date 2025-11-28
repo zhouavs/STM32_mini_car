@@ -37,6 +37,8 @@ static errno_t set_EXTI_handle(const Device_GPIO *const pd, Device_GPIO_EXTI_tri
     GPIOSel = EXTI_GPIOA;
   } else if (hgpio == GPIOE) {
     GPIOSel = EXTI_GPIOE;
+  } else if (hgpio == GPIOB) {
+    GPIOSel = EXTI_GPIOB;
   } else {
     // 其余 GPIO 口暂时不支持
     return EINVAL;

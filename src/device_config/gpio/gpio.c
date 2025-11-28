@@ -170,6 +170,12 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
     .port = GPIOF,
     .pin = GPIO_PIN_8,
   },
+  [DEVICE_IRDA_IN] = {
+    .name = DEVICE_IRDA_IN,
+    .port = GPIOB,
+    .pin = GPIO_PIN_1,
+    .exti_handle = &hexti1,
+  },
 };
 
 errno_t Device_config_GPIO_register_all_device(void) {

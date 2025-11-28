@@ -19,6 +19,11 @@ static Device_timer devices[DEVICE_TIMER_COUNT] = {
     .type = DEVICE_TIMER_TYPE_GENERAL,
     .instance = &htim6,
   },
+  [DEVICE_TIMER_TIM7] = {
+    .name = DEVICE_TIMER_TIM7,
+    .type = DEVICE_TIMER_TYPE_GENERAL,
+    .instance = &htim7,
+  },
 };
 
 errno_t Device_config_timer_register_all_device(void) {
@@ -38,5 +43,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     Device_timer_PeriodElapsedCallback(&devices[DEVICE_TIMER_TIM2]);
   } else if (htim == &htim6) {
     Device_timer_PeriodElapsedCallback(&devices[DEVICE_TIMER_TIM6]);
+  } else if (htim == &htim7) {
+    Device_timer_PeriodElapsedCallback(&devices[DEVICE_TIMER_TIM7]);
   }
 }

@@ -129,7 +129,7 @@ static errno_t get_source_frequent(const Device_timer *const pd, uint32_t *rt_fr
 
   TIM_HandleTypeDef *htim = (TIM_HandleTypeDef *)pd->instance;
 
-  if (htim == &htim2 || htim == &htim6) {
+  if (htim == &htim2 || htim == &htim6 || htim == &htim7) {
     *rt_frequent_ptr = HAL_RCC_GetPCLK1Freq() * 2;
     return ESUCCESS;
   }
