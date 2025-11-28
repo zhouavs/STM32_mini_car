@@ -106,6 +106,7 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM10_Init();
   MX_TIM14_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   dht11_test();
   /* USER CODE END 2 */
