@@ -7,8 +7,8 @@
 #include <stdbool.h>
 
 typedef enum {
-  DEVICE_ultrasonic_1,
-  DEVICE_ultrasonic_COUNT,
+  DEVICE_ULTRASONIC_1,
+  DEVICE_ULTRASONIC_COUNT,
 } Device_ultrasonic_name;
 
 struct Device_ultrasonic;

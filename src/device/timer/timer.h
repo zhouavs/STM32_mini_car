@@ -17,6 +17,7 @@ typedef enum {
   DEVICE_TIMER_TIM6,
   DEVICE_TIMER_TIM7,
   DEVICE_TIMER_TIM10,
+  DEVICE_TIMER_TIM11,
   DEVICE_TIMER_COUNT,
 } Device_timer_name;
 

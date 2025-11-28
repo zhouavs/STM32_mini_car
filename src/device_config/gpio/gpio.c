@@ -181,6 +181,16 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
     .port = GPIOB,
     .pin = GPIO_PIN_5,
   },
+  [DEVICE_ULTRASONIC_TRIG] = {
+    .name = DEVICE_ULTRASONIC_TRIG,
+    .port = GPIOD,
+    .pin = GPIO_PIN_6,
+  },
+  [DEVICE_ULTRASONIC_ECHO] = {
+    .name = DEVICE_ULTRASONIC_ECHO,
+    .port = GPIOD,
+    .pin = GPIO_PIN_7,
+  },
 };
 
 errno_t Device_config_GPIO_register_all_device(void) {

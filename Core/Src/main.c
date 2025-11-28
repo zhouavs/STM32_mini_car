@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/dht11/dht11.h"
+#include "src/application/ultrasonic/ultrasonic.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -108,7 +108,7 @@ int main(void)
   MX_TIM14_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-  dht11_test();
+  ultrasonic_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
