@@ -6,8 +6,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef int8_t angle_t;
-
 typedef enum {
   DEVICE_IRDA_CMD_NONE = 0x00,
   DEVICE_IRDA_CMD_Open = 0x45, DEVICE_IRDA_CMD_Menu = 0x47, DEVICE_IRDA_CMD_Test = 0x44, DEVICE_IRDA_CMD_ADD = 0x40, DEVICE_IRDA_CMD_Return = 0x43,

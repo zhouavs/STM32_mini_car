@@ -176,6 +176,11 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
     .pin = GPIO_PIN_1,
     .exti_handle = &hexti1,
   },
+  [DEVICE_DHT11_IN] = {
+    .name = DEVICE_DHT11_IN,
+    .port = GPIOB,
+    .pin = GPIO_PIN_5,
+  },
 };
 
 errno_t Device_config_GPIO_register_all_device(void) {

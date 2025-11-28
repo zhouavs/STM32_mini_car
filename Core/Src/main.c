@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/irda/irda.h"
+#include "src/application/dht11/dht11.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -104,8 +104,10 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_TIM10_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-  irda_test();
+  dht11_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

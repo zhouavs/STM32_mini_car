@@ -41,7 +41,7 @@ void tracker_test(void) {
   err = pdtimer->ops->is_running(pdtimer, &timer_running);
   if (err) goto err_tag;
   if (timer_running == false) {
-    err = pdtimer->ops->start(pdtimer);
+    err = pdtimer->ops->start(pdtimer, DEVICE_TIMER_START_MODE_IT);
     if (err) goto err_tag;
   }
 

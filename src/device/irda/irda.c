@@ -102,7 +102,7 @@ static errno_t init(Device_IRDA *const pd) {
   err = pd->timer->ops->set_period(pd->timer, 10);
   if (err) return err;
   
-  err = pd->timer->ops->start(pd->timer);
+  err = pd->timer->ops->start(pd->timer, DEVICE_TIMER_START_MODE_IT);
   if (err) return err;
 
   if (ring_buffers[pd->name] == NULL) {

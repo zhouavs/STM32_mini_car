@@ -7,14 +7,17 @@
 
 static errno_t init(const Device_timer *const pd);
 static errno_t is_running(const Device_timer *const pd, bool *rt_running_ptr);
-static errno_t start(const Device_timer *const pd);
+static errno_t start(const Device_timer *const pd, Device_timer_start_mode mode);
 static errno_t stop(const Device_timer *const pd);
+static errno_t get_register_count(const Device_timer *const pd, uint32_t *rt_count_ptr);
 static errno_t get_count(const Device_timer *const pd, uint32_t *rt_count_ptr);
 static errno_t set_period(const Device_timer *const pd, uint32_t value);
+static errno_t set_time_for_count_incr(const Device_timer *const pd, uint32_t us);
 static errno_t set_prescaler(const Device_timer *const pd, uint16_t value);
 static errno_t set_clock_division(const Device_timer *const pd, uint8_t value);
 static errno_t set_auto_reload_register(const Device_timer *const pd, uint32_t value);
 static errno_t set_period_elapsed_callback(Device_timer *const pd, Device_timer_callback *callback);
+static errno_t get_source_frequent(const Device_timer *const pd, uint32_t *rt_frequent_ptr);
 
 // 内部方法 - 查找设备
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
@@ -24,12 +27,15 @@ static const Device_timer_ops device_ops = {
   .is_running = is_running,
   .start = start,
   .stop = stop,
+  .get_register_count = get_register_count,
   .get_count = get_count,
   .set_period = set_period,
+  .set_time_for_count_incr = set_time_for_count_incr,
   .set_prescaler = set_prescaler,
   .set_clock_division = set_clock_division,
   .set_auto_reload_register = set_auto_reload_register,
   .set_period_elapsed_callback = set_period_elapsed_callback,
+  .get_source_frequent = get_source_frequent,
 };
 
 static const Driver_timer_ops *driver_ops = NULL;
@@ -86,7 +92,7 @@ static errno_t is_running(const Device_timer *const pd, bool *rt_running_ptr) {
   return driver_ops->is_running(pd, rt_running_ptr);
 }
 
-static errno_t start(const Device_timer *const pd) {
+static errno_t start(const Device_timer *const pd, Device_timer_start_mode mode) {
   if (pd == NULL || driver_ops == NULL) return EINVAL;
 
   bool running = false;
@@ -98,7 +104,7 @@ static errno_t start(const Device_timer *const pd) {
     timer_count[pd->name] = 0;
   }
 
-  err = driver_ops->start(pd);
+  err = driver_ops->start(pd, mode);
   if (err) return err;
 
   return ESUCCESS;
@@ -107,6 +113,11 @@ static errno_t start(const Device_timer *const pd) {
 static errno_t stop(const Device_timer *const pd) {
   if (pd == NULL || driver_ops == NULL) return EINVAL;
   return driver_ops->stop(pd);
+}
+
+static errno_t get_register_count(const Device_timer *const pd, uint32_t *rt_count_ptr) {
+  if (pd == NULL || driver_ops == NULL) return EINVAL;
+  return driver_ops->get_register_count(pd, rt_count_ptr);
 }
 
 static errno_t get_count(const Device_timer *const pd, uint32_t *rt_count_ptr) {
@@ -128,25 +139,34 @@ static errno_t set_period(const Device_timer *const pd, uint32_t us) {
   if (pd == NULL || driver_ops == NULL) return EINVAL;
   errno_t err = ESUCCESS;
 
+  err = set_time_for_count_incr(pd, 1);
+  if (err) return err;
+
+  // 如果传入的 us 参数为 1, 那么 us - 1 会为 0, 此时无法产生溢出回调, 而且 1 微秒级的回调根本不准确, 所以此处不针对传入 1 微秒的情况进行特殊处理, 不要这么做
+  err = driver_ops->set_auto_reload_register(pd, us - 1);
+  if (err) return err;
+
+  return ESUCCESS;
+}
+
+static errno_t set_time_for_count_incr(const Device_timer *const pd, uint32_t us) {
+  errno_t err = ESUCCESS;
+
   uint32_t frequent = 0;
   err = driver_ops->get_source_frequent(pd, &frequent);
   if (err) return err;
 
-  // 如果传入的 us 参数为 1
-  // 设置预分频之后的周期为半微秒
-  // 因为如果周期设置为 1 微秒的话, 在进行微秒级计数的时候 set_auto_reload_register 的值得设置为 us - 1 也就是 0
-  // 但设置为 0 时无法不会产生有效的溢出事件, 不会出发 HAL_TIM_PeriodElapsedCallback  回调
-  frequent /= 1000000;
-  if (us == 1) {
-    frequent /= 2;
-    us *= 2;
+  const uint32_t div = (1000000 / us);
+
+  if (frequent % div != 0) {
+    return EINVAL;
   }
 
-  err = driver_ops->set_prescaler(pd, frequent - 1);
-  if (err) return err;
+  const uint32_t psc = frequent / div;
 
-  // 与此同时, 自动装载寄存器也得设置为微秒数 * 2
-  err = driver_ops->set_auto_reload_register(pd, us - 1);
+  if (psc == 0) return EINVAL;
+
+  err = driver_ops->set_prescaler(pd, psc - 1);
   if (err) return err;
 
   return ESUCCESS;
@@ -171,6 +191,11 @@ static errno_t set_period_elapsed_callback(Device_timer *const pd, Device_timer_
   if (pd == NULL || callback == NULL) return EINVAL;
   pd->period_elapsed_callback = callback;
   return ESUCCESS;
+}
+
+static errno_t get_source_frequent(const Device_timer *const pd, uint32_t *rt_frequent_ptr) {
+  if (pd == NULL) return EINVAL;
+  return driver_ops->get_source_frequent(pd, rt_frequent_ptr);
 }
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd) {

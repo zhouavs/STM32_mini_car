@@ -7,10 +7,16 @@
 typedef errno_t Device_timer_callback(void);
 
 typedef enum {
+  DEVICE_TIMER_START_MODE_IT,
+  DEVICE_TIMER_START_MODE_NO_IT,
+} Device_timer_start_mode;
+
+typedef enum {
   DEVICE_TIMER_SYSTICK,
   DEVICE_TIMER_TIM2,
   DEVICE_TIMER_TIM6,
   DEVICE_TIMER_TIM7,
+  DEVICE_TIMER_TIM10,
   DEVICE_TIMER_COUNT,
 } Device_timer_name;
 
@@ -33,20 +39,24 @@ typedef struct Device_timer {
 typedef struct Device_timer_ops {
   errno_t (*init)(const Device_timer *const pd);
   errno_t (*is_running)(const Device_timer *const pd, bool *rt_running_ptr);
-  errno_t (*start)(const Device_timer *const pd);
+  errno_t (*start)(const Device_timer *const pd, Device_timer_start_mode mode);
   errno_t (*stop)(const Device_timer *const pd);
+  errno_t (*get_register_count)(const Device_timer *const pd, uint32_t *rt_count_ptr);
   errno_t (*get_count)(const Device_timer *const pd, uint32_t *rt_count_ptr);
   errno_t (*set_period)(const Device_timer *const pd, uint32_t us);
+  errno_t (*set_time_for_count_incr)(const Device_timer *const pd, uint32_t us);
   errno_t (*set_prescaler)(const Device_timer *const pd, uint16_t value);
   errno_t (*set_clock_division)(const Device_timer *const pd, uint8_t value);
   errno_t (*set_auto_reload_register)(const Device_timer *const pd, uint32_t value);
   errno_t (*set_period_elapsed_callback)(Device_timer *const pd, Device_timer_callback *callback);
+  errno_t (*get_source_frequent)(const Device_timer *const pd, uint32_t *rt_frequent_ptr);
 } Device_timer_ops;
 
 typedef struct Driver_timer_ops {
   errno_t (*is_running)(const Device_timer *const pd, bool *rt_running_ptr);
-  errno_t (*start)(const Device_timer *const pd);
+  errno_t (*start)(const Device_timer *const pd, Device_timer_start_mode mode);
   errno_t (*stop)(const Device_timer *const pd);
+  errno_t (*get_register_count)(const Device_timer *const pd, uint32_t *rt_count_ptr);
   errno_t (*get_count)(const Device_timer *const pd, uint32_t *rt_count_ptr);
   errno_t (*set_prescaler)(const Device_timer *const pd, uint16_t value);
   errno_t (*set_clock_division)(const Device_timer *const pd, uint8_t value);

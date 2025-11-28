@@ -78,7 +78,7 @@ static errno_t init(Device_speed_test *const pd) {
   if (err) return err;
 
   if (timer_is_running == false) {
-    err = pd->timer->ops->start(pd->timer);
+    err = pd->timer->ops->start(pd->timer, DEVICE_TIMER_START_MODE_IT);
     if (err) return err;
   }
 
