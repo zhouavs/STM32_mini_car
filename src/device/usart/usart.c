@@ -72,7 +72,7 @@ static errno_t init(const Device_USART *const pd) {
 
   if (ring_buffers[pd->name] == NULL) {
     Ring_buffer *rb = NULL;
-    err = Ring_buffer_create(&rb, 255);
+    err = Ring_buffer_create(&rb, pd->buffer_size);
     if (err) return err;
     ring_buffers[pd->name] = rb;
   }

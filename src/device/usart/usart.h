@@ -5,6 +5,7 @@
 
 typedef enum {
   DEVICE_USART_DEBUG,
+  DEVICE_USART_WIFI_BLUETOOTH,
   DEVICE_USART_COUNT,
 } Device_USART_name;
 
@@ -13,6 +14,7 @@ struct Device_USART_ops;
 
 typedef struct Device_USART {
   const Device_USART_name name;
+  const uint32_t buffer_size;
   void *const instance;
   const struct Device_USART_ops *ops;
 } Device_USART;
