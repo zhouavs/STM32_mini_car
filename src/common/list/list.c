@@ -2,10 +2,12 @@
 #include <stdlib.h>
 
 static errno_t list_head_insert(List *list, const void *value);
+static errno_t list_remove_node(List *list, List_node *node);
 static errno_t list_find(const List *list, void *return_value_ptr, const void *const ctx, List_item_match *const match);
 
 static const struct List_ops ops = {
   .head_insert = list_head_insert,
+  .list_remove_node = list_remove_node,
   .find = list_find,
 };
 
@@ -27,7 +29,6 @@ static errno_t list_head_insert(List *list, const void *value) {
 
   List_node *pnode = (List_node *)malloc(sizeof(List_node));
   if (pnode == NULL) return ENOMEM;
-  // Store the pointer; list does not mutate the pointee
   pnode->value = (void *)value;
   pnode->next = NULL;
 
@@ -39,6 +40,29 @@ static errno_t list_head_insert(List *list, const void *value) {
   pnode->next = list->head;
   list->head = pnode;
   return ESUCCESS;
+}
+
+static errno_t list_remove_node(List *list, List_node *node) {
+  if (list == NULL) return EINVAL;
+
+  List_node *cur = list->head;
+
+  if (cur == NULL) return ENOANO;
+  if (cur == node) {
+    list->head = cur->next;
+    free(node);
+    return ESUCCESS;
+  }
+
+  for (;;) {
+    if (cur->next == NULL) return ENOANO;
+    if (cur->next == node) {
+      cur->next = node->next;
+      free(node);
+      return ESUCCESS;
+    }
+    cur = cur->next;
+  }
 }
 
 static errno_t list_find(const List *list, void *return_value_ptr, const void *const ctx, List_item_match *const match) {

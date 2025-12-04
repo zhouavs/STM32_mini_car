@@ -11,6 +11,32 @@ typedef enum {
   DEVICE_WIFI_BLUETOOTH_COUNT,
 } Device_wifi_bluetooth_name;
 
+typedef enum {
+  UDP_SERVER = 1,
+  UDP_CLIENT = 2,
+  TCP_SERVER = 3,
+  TCP_CLIENT = 4,
+  TCP_SEED = 5,
+  SSL_SERVER = 6,
+  SSL_CLIENT = 7,
+  SSL_SEED = 8,
+} Device_wifi_bluetooth_socket_type;
+
+typedef enum {
+  DISCONNECTED = 0,
+  CONNECTING = 1,
+  CONNECTION_SUCCESSFUL = 3,
+  CONNECTION_FAILED = 4,
+  CONNECTION_DELETING = 127,
+} Device_wifi_bluetooth_socket_status;
+
+typedef struct {
+  uint32_t connect_id;
+  Device_wifi_bluetooth_socket_type type;
+  uint8_t *remote_host;
+  uint16_t port;
+} Net_node;
+
 struct Device_wifi_bluetooth;
 struct Device_wifi_bluetooth_ops;
 
