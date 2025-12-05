@@ -18,7 +18,8 @@ typedef struct {
 // 说明：wb_string.size 表示可用字节容量（不含末尾的 \0）。
 // 约定所有接收/格式化场景使用 size = 物理缓冲区长度 - 1，以避免越界。
 
-static errno_t wb_string_concat(wb_string *const aim, const wb_string *const from);
+// 字符串拼接
+static errno_t wb_string_concat(wb_string *const aim, const wb_string *const from) __attribute__((unused));
 
 typedef enum {
   MATCHED_MARK_SUCCESS,
@@ -162,12 +163,10 @@ static errno_t join_wifi_ap(Device_wifi_bluetooth *const pd, const uint8_t *cons
   err = pd->usart->ops->transmit(pd->usart, cmd.buf, cmd.len);
   if (err) return err;
 
-  match_fn_t *const match_cmd_fns[] = { match_ok, match_error, match_cmd_unknown };
-  err = wait_ack(pd, NULL, 1000, match_cmd_fns, sizeof(match_cmd_fns) / sizeof(match_fn_t *));
-  if (err) return err;
-
-  match_fn_t *const match_event_fns[] = { match_event_got_ip };
-  err = wait_ack(pd, NULL, 5000, match_event_fns, sizeof(match_event_fns) / sizeof(match_fn_t *));
+  uint8_t data_buf[200] = {0};
+  wb_string data = { .buf = data_buf, .len = 0, .size = 200 - 1 };
+  match_fn_t *const match_event_fns[] = { match_event_got_ip, match_error, match_cmd_unknown };
+  err = wait_ack(pd, &data, 10000, match_event_fns, sizeof(match_event_fns) / sizeof(match_fn_t *));
   if (err) return err;
 
   return ESUCCESS;
@@ -255,7 +254,7 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
   uint8_t cmd_buf[26] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 26 - 1 };
 
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETDEL=%d\r\n", con_id);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETDEL=%ld\r\n", con_id);
 
   if (cmd.len > cmd.size) {
     return EOVERFLOW;
@@ -269,6 +268,9 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
 
   match_fn_t *const match_fns[] = { match_ok, match_error, match_cmd_unknown };
   err = wait_ack(pd, NULL, 1000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
+  if (err) return err;
+
+  err = port_con_id_relate_del(port);
   if (err) return err;
 
   return ESUCCESS;
@@ -289,7 +291,7 @@ static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   uint8_t cmd_buf[33] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 33 - 1 };
 
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETSEND=%d,%d\r\n", con_id, data_len);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETSEND=%ld,%ld\r\n", con_id, data_len);
   if (cmd.len > cmd.size) return EOVERFLOW;
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
@@ -325,7 +327,7 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
 
   uint8_t cmd_buf[26] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 26 - 1 };
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETREAD=%d\r\n", con_id);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETREAD=%ld\r\n", con_id);
   if (cmd.len > cmd.size) return EOVERFLOW;
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
@@ -409,7 +411,7 @@ static errno_t socket_receive_config(Device_wifi_bluetooth *const pd, Device_wif
 
 static errno_t wait_ack(
   Device_wifi_bluetooth *const pd // wifi 设备
-  , wb_string *rt_data
+  , wb_string *out_data
   , uint32_t timeout_ms // 超时时间
   , match_fn_t *const match_fns[]
   , uint8_t match_fn_count
@@ -422,31 +424,35 @@ static errno_t wait_ack(
   err = pd->timer->ops->get_count(pd->timer, &begin);
   if (err) return err;
 
-  uint8_t buf[100] = {0};
-  wb_string str = { .buf = buf, .len = 0, .size = 100 - 1 };
+  // 内部默认缓冲区只有 50 个字节, 如果预计到返回数据长度超出, 就使用外部传入的
+  uint8_t default_buf[50] = {0};
+  wb_string default_data = { .buf = default_buf, .len = 0, .size = 50 - 1 };
 
   // 如果有外部传入的字符串, 使用外部的, 否则采用当前函数创建的
-  wb_string *str_ptr = rt_data != NULL ? rt_data : &str;
+  wb_string *data_ptr = out_data != NULL ? out_data : &default_data;
 
   uint32_t read_len = 0;
 
   for (;;) {
-    if (str_ptr->len == str_ptr->size) return EOVERFLOW;
+    if (data_ptr->len == data_ptr->size)
+      return EOVERFLOW;
 
     err = pd->timer->ops->get_count(pd->timer, &now);
     if (err) return err;
-    if (now - begin >= timeout_ms) return ETIMEDOUT;
+    if (now - begin >= timeout_ms)
+      return ETIMEDOUT;
 
-    err = pd->usart->ops->receive(pd->usart, str_ptr->buf + str_ptr->len, &read_len, str_ptr->size - str_ptr->len);
+    // 一次读取一个字节, 避免读到边界外的数据
+    err = pd->usart->ops->receive(pd->usart, data_ptr->buf + data_ptr->len, &read_len, 1);
     if (err) return err;
     if (read_len == 0) continue; // 没有新数据时，继续等待
-    str_ptr->len += read_len;
+    data_ptr->len += read_len;
 
     bool matched = false;
     Matched_mark mark = MATCHED_MARK_FAIL;
 
     for (uint8_t i = 0; i < match_fn_count; i++) {
-      err = match_fns[i](str_ptr, &matched, &mark);
+      err = match_fns[i](data_ptr, &matched, &mark);
       if (err) return err;
 
       if (!matched) continue;
@@ -474,12 +480,12 @@ static errno_t match_ok(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_m
   }
 
   // 比较最后几个字符
-  const bool flag = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
-  if (flag) {
+  const bool matched = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
+  if (matched) {
     *rt_mark_ptr = MATCHED_MARK_SUCCESS;
   }
 
-  *rt_matched_ptr = flag;
+  *rt_matched_ptr = matched;
 
   return ESUCCESS;
 }
@@ -497,13 +503,13 @@ static errno_t match_error(wb_string *msg, bool *rt_matched_ptr, Matched_mark *r
   }
 
   // 比较最后几个字符
-  const bool flag = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
-  if (flag) {
+  const bool matched = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
+  if (matched) {
     printf("wait_act_cmd_error -> %.*s\r\n", (int)msg->len, msg->buf);
     *rt_mark_ptr = MATCHED_MARK_FAIL;
   }
 
-  *rt_matched_ptr = flag;
+  *rt_matched_ptr = matched;
 
   return ESUCCESS;
 }
@@ -519,14 +525,14 @@ static errno_t match_cmd_unknown(wb_string *msg, bool *rt_matched_ptr, Matched_m
     return ESUCCESS;
   }
 
-  // 比较前几个字符
-  const bool flag = strncmp((char *)msg->buf, keyword, keyword_len) == 0;
-  if (flag) {
+  // 比较最后几个字符
+  const bool matched = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
+  if (matched) {
     printf("wait_act_cmd_unknown -> %.*s\r\n", (int)msg->len, msg->buf);
     *rt_mark_ptr = MATCHED_MARK_FAIL;
   }
 
-  *rt_matched_ptr = flag;
+  *rt_matched_ptr = matched;
 
   return ESUCCESS;
 }
@@ -541,13 +547,13 @@ static errno_t match_event_got_ip(wb_string *msg, bool *rt_matched_ptr, Matched_
     return ESUCCESS;
   }
 
-  // 比较前几个字符
-  const bool flag = strncmp((char *)msg->buf, keyword, keyword_len) == 0;
-  if (flag) {
+  // 比较最后几个字符
+  const bool matched = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
+  if (matched) {
     *rt_mark_ptr = MATCHED_MARK_SUCCESS;
   }
 
-  *rt_matched_ptr = flag;
+  *rt_matched_ptr = matched;
 
   return ESUCCESS;
 }
@@ -559,13 +565,13 @@ static errno_t match_socket_send_start(wb_string *msg, bool *rt_matched_ptr, Mat
     return ESUCCESS;
   }
 
-  // 比较第一个字符
-  const bool flag = msg->buf[0] == '>';
-  if (flag) {
+  // 比较最后一个字符
+  const bool matched = msg->buf[msg->len - 1] == '>';
+  if (matched) {
     *rt_mark_ptr = MATCHED_MARK_SUCCESS;
   }
 
-  *rt_matched_ptr = flag;
+  *rt_matched_ptr = matched;
 
   return ESUCCESS;
 }
@@ -582,12 +588,12 @@ static errno_t match_socket_read_start(wb_string *msg, bool *rt_matched_ptr, Mat
   }
 
   // 比较前几个字符
-  const bool flag = strncmp((char *)msg->buf, keyword, keyword_len) == 0;
-  if (flag) {
+  const bool matched = strncmp((char *)msg->buf, keyword, keyword_len) == 0;
+  if (matched) {
     *rt_mark_ptr = MATCHED_MARK_SUCCESS;
   }
 
-  *rt_matched_ptr = flag;
+  *rt_matched_ptr = matched;
 
   return ESUCCESS;
 }

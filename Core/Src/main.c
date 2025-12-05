@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/rtc/rtc.h"
+#include "src/application/wifi_bluetooth/wifi_bluetooth.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -109,7 +109,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
-  rtc_test();
+  wifi_bluetooth_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
