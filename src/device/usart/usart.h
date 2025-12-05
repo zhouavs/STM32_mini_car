@@ -23,6 +23,7 @@ typedef struct Device_USART_ops {
   errno_t (*init)(const Device_USART *const pd);
   errno_t (*transmit)(const Device_USART *const pd, uint8_t *data, uint32_t len);
   errno_t (*receive)(const Device_USART *const pd, uint8_t *data, uint32_t *data_len, uint32_t len);
+  errno_t (*clear_receive_buf)(const Device_USART *const pd);
 } Device_USART_ops;
 
 typedef struct Driver_USART_ops {

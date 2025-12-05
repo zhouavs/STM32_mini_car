@@ -30,12 +30,10 @@ typedef enum {
   CONNECTION_DELETING = 127,
 } Device_wifi_bluetooth_socket_status;
 
-typedef struct {
-  uint32_t connect_id;
-  Device_wifi_bluetooth_socket_type type;
-  uint8_t *remote_host;
-  uint16_t port;
-} Net_node;
+typedef enum {
+  RECEIVE_MODE_PASSIVE = 0,
+  RECEIVE_MODE_ACTIVE = 1,
+} Device_wifi_bluetooth_socket_receive_mode;
 
 struct Device_wifi_bluetooth;
 struct Device_wifi_bluetooth_ops;
@@ -49,6 +47,15 @@ typedef struct Device_wifi_bluetooth {
 
 typedef struct Device_wifi_bluetooth_ops {
   errno_t (*init)(Device_wifi_bluetooth *const pd);
+  errno_t (*join_wifi_ap)(Device_wifi_bluetooth *const pd, const uint8_t *const ssid, const uint8_t *const pwd);
+  errno_t (*create_socket_connection)(
+    Device_wifi_bluetooth *const pd
+    , Device_wifi_bluetooth_socket_type type
+    , uint8_t *remote_host
+    , uint16_t port
+  );
+  errno_t (*delete_socket_connection)(Device_wifi_bluetooth *const pd, uint32_t port);
+  errno_t (*socket_send)(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *data_buf, uint32_t data_len);
 } Device_wifi_bluetooth_ops;
 
 // 全局方法

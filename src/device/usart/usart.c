@@ -7,6 +7,7 @@
 static errno_t init(const Device_USART *const pd);
 static errno_t receive(const Device_USART *const pd, uint8_t *data, uint32_t *data_len, uint32_t len);
 static errno_t transmit(const Device_USART *const pd, uint8_t *data, uint32_t len);
+static errno_t clear_receive_buf(const Device_USART *const pd);
 
 static inline uint8_t match_device_by_name(const void *const name, const void *const pd);
 
@@ -14,6 +15,7 @@ static const Device_USART_ops device_ops = {
   .init = init,
   .receive = receive,
   .transmit = transmit,
+  .clear_receive_buf = clear_receive_buf,
 };
 
 static List *list = NULL;
@@ -100,4 +102,11 @@ static errno_t receive(const Device_USART *const pd, uint8_t *data, uint32_t *da
   Ring_buffer *const rb = ring_buffers[pd->name];
   if (rb == NULL) return EINVAL;
   return rb->ops->read(rb, data, data_len, len);
+}
+
+static errno_t clear_receive_buf(const Device_USART *const pd) {
+  if (pd == NULL) return EINVAL;
+  Ring_buffer *const rb = ring_buffers[pd->name];
+  if (rb == NULL) return EINVAL;
+  return rb->ops->clear(rb);
 }
