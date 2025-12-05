@@ -51,12 +51,27 @@ void wifi_bluetooth_test() {
   err = pdw->ops->join_wifi_ap(pdw, (uint8_t *)"Law_of_Cycles", (uint8_t *)"Homura_9630");
   if (err) goto print_err_tag;
 
+  // 新建 socket 链接
+  err = pdw->ops->create_socket_connection(pdw, TCP_CLIENT, (uint8_t *)"192.168.31.109", 9000);
+  if (err) goto print_err_tag;
+
+  // 发送消息
+  const char *send_msg = "ping";
+  err = pdw->ops->socket_send(pdw, 9000, (uint8_t *)send_msg, strlen((char *)send_msg));
+  if (err) goto print_err_tag;
+
+  // 接收消息
+  uint8_t read_buf[100] = {0};
+  uint32_t read_len = 0;
+  err = pdw->ops->socket_read(pdw, 9000, read_buf, &read_len, 100);
+  if (err) goto print_err_tag;
+
   while (1) {
 
   }
 
   print_err_tag:
-  printf("irda_test_err\r\nerr: %d\r\n", err);
+  printf("wifi_bluetooth_test_err\r\nerr: %d\r\n", err);
   while (1);
 
   return;

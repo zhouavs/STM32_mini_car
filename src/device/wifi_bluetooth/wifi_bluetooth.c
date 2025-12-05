@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <limits.h>
+#include "common/delay/delay.h"
 
 /**
  * @brief wifi-蓝牙 设备使用的自定义字符串
@@ -45,8 +46,8 @@ static errno_t create_socket_connection(
   , uint16_t port
 );
 static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_t port);
-static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *data_buf, uint32_t data_len);
-static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *rt_data_ptr, uint32_t *rt_data_len_ptr, uint32_t data_size);
+static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, const uint8_t *const data_buf, uint32_t data_len);
+static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const rt_data_ptr, uint32_t *const rt_data_len_ptr, uint32_t data_size);
 
 // 内部方法
 // 配置接收方式
@@ -206,8 +207,8 @@ static errno_t create_socket_connection(
 
   if (cmd.len > cmd.size) return EOVERFLOW;
 
-  uint8_t data_buf[50] = {0};
-  wb_string data = { .buf = data_buf, .len = 0, .size = 50 - 1 };
+  uint8_t data_buf[200] = {0};
+  wb_string data = { .buf = data_buf, .len = 0, .size = 200 - 1 };
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
   if (err) return err;
@@ -221,8 +222,6 @@ static errno_t create_socket_connection(
 
   const char *pre_str = "connect success ConID=";
   const uint8_t pre_str_len = strlen(pre_str);
-
-  if (data.len > data.size) return EOVERFLOW;
 
   char *con_id_start = strstr((char *)data.buf, pre_str);
   if (con_id_start == NULL) return EIO;
@@ -254,7 +253,7 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
   uint8_t cmd_buf[26] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 26 - 1 };
 
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETDEL=%ld\r\n", con_id);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETDEL=%u\r\n", con_id);
 
   if (cmd.len > cmd.size) {
     return EOVERFLOW;
@@ -276,7 +275,7 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
   return ESUCCESS;
 }
 
-static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *data, uint32_t data_len) {
+static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, const uint8_t *const data, uint32_t data_len) {
   if (pd == NULL || data == NULL || data_len == 0) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -291,7 +290,7 @@ static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   uint8_t cmd_buf[33] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 33 - 1 };
 
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETSEND=%ld,%ld\r\n", con_id, data_len);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETSEND=%u,%u\r\n", con_id, data_len);
   if (cmd.len > cmd.size) return EOVERFLOW;
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
@@ -314,7 +313,7 @@ static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   return ESUCCESS;
 }
 
-static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *rt_data_ptr, uint32_t *rt_data_len_ptr, uint32_t data_size) {
+static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const rt_data_ptr, uint32_t *const rt_data_len_ptr, uint32_t data_size) {
   if (pd == NULL) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -327,7 +326,7 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
 
   uint8_t cmd_buf[26] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 26 - 1 };
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETREAD=%ld\r\n", con_id);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETREAD=%u\r\n", con_id);
   if (cmd.len > cmd.size) return EOVERFLOW;
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
@@ -339,18 +338,14 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   // 直接使用外部 buf 作为容器
   wb_string data_str = { .buf = rt_data_ptr, .len = 0, .size = data_size - 1 };
 
-  // 等待 +SOCKETREAD:
-  match_fn_t *const match_start_fns[] = { match_socket_read_start, match_error, match_cmd_unknown };
-  err = wait_ack(pd, &data_str, 1000, match_start_fns, sizeof(match_start_fns) / sizeof(match_fn_t *));
-  if (err) return err;
-
   // 等待 OK
   match_fn_t *const match_ok_fns[] = { match_ok, match_error, match_cmd_unknown };
   err = wait_ack(pd, &data_str, 1000, match_ok_fns, sizeof(match_ok_fns) / sizeof(match_fn_t *));
   if (err) return err;
 
-  // 解析 data_str 中的数据, 解析 +SOCKETREAD:<ConID>,<len>,<data>
-  const char *pre_str = "+SOCKETREAD:";
+  // 解析 data_str 中的数据, 解析 +SOCKETREAD,<ConID>,<len>,<data>
+  // 例如: AT+SOCKETREAD=3\r\n+SOCKETREAD,3,9,WELCOME\r\n\r\nOK\r\n
+  const char *pre_str = "+SOCKETREAD,";
   const uint8_t pre_str_len = strlen(pre_str);
 
   uint32_t read_con_id = 0, read_len = 0;
@@ -363,6 +358,7 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   // conID 字符串转换为数字
   trans_fail = str_to_uint32((char *)data_buf_ptr, &read_con_id, (char **)&data_buf_ptr);
   if (trans_fail) return EIO;
+  if (read_con_id != con_id) return EIO;
 
   // 指针指向 len 对应字符起始位, 跳过 ,
   data_buf_ptr += 1;
@@ -494,7 +490,7 @@ static errno_t match_ok(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_m
 static errno_t match_error(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr) {
   // \r\n+<CMD>:<error_code>\r\nERROR\r\n
   // errorno 表示错误码
-  const char *keyword = "\r\nERROR\r\n";
+  const char *keyword = "\r\n+ERROR\r\n";
   const uint8_t keyword_len = strlen(keyword);
 
   if (msg->len < keyword_len) {
