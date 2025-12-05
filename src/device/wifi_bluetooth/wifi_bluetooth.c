@@ -15,6 +15,8 @@ typedef struct {
   uint32_t len;
   uint32_t size;
 } wb_string;
+// 说明：wb_string.size 表示可用字节容量（不含末尾的 \0）。
+// 约定所有接收/格式化场景使用 size = 物理缓冲区长度 - 1，以避免越界。
 
 static errno_t wb_string_concat(wb_string *const aim, const wb_string *const from);
 
@@ -272,8 +274,8 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
   return ESUCCESS;
 }
 
-static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *data_buf, uint32_t data_len) {
-  if (pd == NULL || data_buf == NULL || data_len == 0) return EINVAL;
+static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *data, uint32_t data_len) {
+  if (pd == NULL || data == NULL || data_len == 0) return EINVAL;
 
   errno_t err = ESUCCESS;
 
@@ -300,8 +302,7 @@ static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   err = wait_ack(pd, NULL, 1000, match_start_fns, sizeof(match_start_fns) / sizeof(match_fn_t *));
   if (err) return err;
 
-  wb_string data = { .buf = data_buf, .len = data_len, .size = data_len };
-  err = pd->usart->ops->transmit(pd->usart, data.buf, data.len);
+  err = pd->usart->ops->transmit(pd->usart, data, data_len);
   if (err) return err;
 
   match_fn_t *const match_ok_fns[] = { match_ok, match_error, match_cmd_unknown };
@@ -384,7 +385,7 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
 }
 
 static errno_t socket_receive_config(Device_wifi_bluetooth *const pd, Device_wifi_bluetooth_socket_receive_mode mode) {
-  if (pd == NULL) return NULL;
+  if (pd == NULL) return EINVAL;
 
   uint8_t cmd_buf[25] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 25 - 1 };
