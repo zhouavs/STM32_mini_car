@@ -135,6 +135,7 @@ static errno_t decode(Device_IRDA *const pd, Device_IRDA_cmd *rt_cmd_ptr) {
 
   while (true) {
     switch (state) {
+      // 初始状态
       case STATE_IDLE: {
         err = read_tick(pd, &cur_tick, timeout);
         if (err) return err;
@@ -144,6 +145,7 @@ static errno_t decode(Device_IRDA *const pd, Device_IRDA_cmd *rt_cmd_ptr) {
 
         break;
       }
+      // 处理引导码前半部
       case STATE_LEADER_FIRST: {
         err = read_tick(pd, &cur_tick, timeout);
         if (err) return err;
@@ -159,6 +161,7 @@ static errno_t decode(Device_IRDA *const pd, Device_IRDA_cmd *rt_cmd_ptr) {
 
         break;
       }
+      // 处理引导码后半部
       case STATE_LEADER_SECOND: {
         err = read_tick(pd, &cur_tick, timeout);
         if (err) return err;
@@ -178,6 +181,7 @@ static errno_t decode(Device_IRDA *const pd, Device_IRDA_cmd *rt_cmd_ptr) {
         
         break;
       }
+      // 获取及处理数据
       case STATE_DATA: {
         // 每次发送 4 个字节数据, 分别是 地址 -> 地址反码 -> 命令 -> 命令反码
         uint8_t bytes[4] = {0};
