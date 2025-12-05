@@ -43,6 +43,7 @@ static errno_t create_socket_connection(
 );
 static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_t port);
 static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *data_buf, uint32_t data_len);
+static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *rt_data_ptr, uint32_t *rt_data_len_ptr, uint32_t data_size);
 
 // 内部方法
 // 配置接收方式
@@ -82,6 +83,7 @@ static const Device_wifi_bluetooth_ops device_ops = {
   .create_socket_connection = create_socket_connection,
   .delete_socket_connection = delete_socket_connection,
   .socket_send = socket_send,
+  .socket_read = socket_read,
 };
 
 static List *list = NULL;
@@ -365,12 +367,16 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
   trans_fail = str_to_uint32((char *)data_buf_ptr, &read_len, (char **)&data_buf_ptr);
   if (trans_fail) return EIO;
 
-  // 指针指向 data 字符起始位
+  // 指针指向 data 字符起始位，跳过 ,
   data_buf_ptr += 1;
-  // 把后续 len 个字节移动到外部 buf 的首位
+  
+  // 检查数据长度是否越界
+  if (read_len > data_str.size) return EOVERFLOW;
+  
+  // 把 data 数据移动到外部 buf 的首位
   memmove(data_str.buf, data_buf_ptr, read_len);
-  // 后续字符设置为0
-  memset(data_buf_ptr + read_len, 0, data_str.size - read_len);
+  // 剩余字符设置为 0
+  memset(data_str.buf + read_len, 0, data_str.size - read_len);
 
   *rt_data_len_ptr = read_len;
 
@@ -439,7 +445,7 @@ static errno_t wait_ack(
     Matched_mark mark = MATCHED_MARK_FAIL;
 
     for (uint8_t i = 0; i < match_fn_count; i++) {
-      err = match_fns[i](&str, &matched, &mark);
+      err = match_fns[i](str_ptr, &matched, &mark);
       if (err) return err;
 
       if (!matched) continue;
