@@ -55,7 +55,7 @@ typedef struct Device_wifi_bluetooth_ops {
     , uint16_t port
   );
   errno_t (*delete_socket_connection)(Device_wifi_bluetooth *const pd, uint32_t port);
-  errno_t (*socket_send)(Device_wifi_bluetooth *const pd, uint32_t port, const uint8_t *const data_buf, uint32_t data_len);
+  errno_t (*socket_send)(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const data_buf, uint32_t data_len);
   errno_t (*socket_read)(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const rt_data_ptr, uint32_t *const rt_data_len_ptr, uint32_t data_size);
 } Device_wifi_bluetooth_ops;
 

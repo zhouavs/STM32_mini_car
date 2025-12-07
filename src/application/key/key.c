@@ -6,9 +6,9 @@
 
 static void callback(void) {
   Device_GPIO *pk = NULL, *pd = NULL;
-  errno_t err = Device_GPIO_find(&pk, DEVICE_KEY_1);
+  errno_t err = Device_GPIO_find(&pk, DEVICE_KEY_1_IN);
   if (err) return;
-  err = Device_GPIO_find(&pd, DEVICE_LED_1);
+  err = Device_GPIO_find(&pd, DEVICE_LED_1_OUT);
   if (err) return;
 
   Pin_value kv = PIN_VALUE_1;
@@ -26,7 +26,7 @@ void key_test(void) {
   if (err) return;
 
   Device_GPIO *pk = NULL;
-  err = Device_GPIO_find(&pk, DEVICE_KEY_1);
+  err = Device_GPIO_find(&pk, DEVICE_KEY_1_IN);
   if (err) return;
 
   err = pk->ops->init(pk);

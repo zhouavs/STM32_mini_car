@@ -5,46 +5,49 @@
 #include "device/keyboard/keyboard.h"
 
 static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
-  [DEVICE_LED_1] = {
-    .name = DEVICE_LED_1,
+  [DEVICE_LED_1_OUT] = {
+    .name = DEVICE_LED_1_OUT,
     .port = GPIOB,
     .pin = GPIO_PIN_12,
   },
-  [DEVICE_LED_2] = {
-    .name = DEVICE_LED_2,
+  [DEVICE_LED_2_OUT] = {
+    .name = DEVICE_LED_2_OUT,
     .port = GPIOB,
     .pin = GPIO_PIN_13,
   },
-  [DEVICE_LED_3] = {
-    .name = DEVICE_LED_3,
+  [DEVICE_LED_3_OUT] = {
+    .name = DEVICE_LED_3_OUT,
     .port = GPIOB,
     .pin = GPIO_PIN_14,
   },
-  [DEVICE_LED_4] = {
-    .name = DEVICE_LED_4,
+  [DEVICE_LED_4_OUT] = {
+    .name = DEVICE_LED_4_OUT,
     .port = GPIOB,
     .pin = GPIO_PIN_15,
   },
-  [DEVICE_KEY_1] = {
-    .name = DEVICE_KEY_1,
+  [DEVICE_KEY_1_IN] = {
+    .name = DEVICE_KEY_1_IN,
     .port = GPIOA,
     .pin = GPIO_PIN_0,
     .exti_handle = &hexti0,
   },
-  [DEVICE_KEY_2] = {
-    .name = DEVICE_KEY_2,
+  [DEVICE_KEY_2_IN] = {
+    .name = DEVICE_KEY_2_IN,
     .port = GPIOA,
     .pin = GPIO_PIN_1,
+    .exti_handle = &hexti1,
   },
-  [DEVICE_KEY_3] = {
-    .name = DEVICE_KEY_3,
+  [DEVICE_KEY_3_IN] = {
+    .name = DEVICE_KEY_3_IN,
     .port = GPIOA,
     .pin = GPIO_PIN_2,
+    .exti_handle = &hexti2,
   },
-  [DEVICE_KEY_4] = {
-    .name = DEVICE_KEY_4,
+  [DEVICE_KEY_4_IN] = {
+    .name = DEVICE_KEY_4_IN,
     .port = GPIOA,
     .pin = GPIO_PIN_3,
+    .exti_handle = &hexti3,
   },
   [DEVICE_W25Q64_CS] = {
     .name = DEVICE_W25Q64_CS,
@@ -208,23 +211,23 @@ errno_t Device_config_GPIO_register_all_device(void) {
 // void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //   switch (GPIO_Pin) {
 //     case GPIO_PIN_0: {
-//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_1]);
-//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_1]);
+//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_1_IN]);
+//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_1_IN]);
 //       break;
 //     }
 //     case GPIO_PIN_1: {
-//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_2]);
-//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_2]);
+//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_2_IN]);
+//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_2_IN]);
 //       break;
 //     }
 //     case GPIO_PIN_2: {
-//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_3]);
-//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_3]);
+//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_3_IN]);
+//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_3_IN]);
 //       break;
 //     }
 //     case GPIO_PIN_3: {
-//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_4]);
-//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_4]);
+//       Device_GPIO_EXTI_callback(&devices[DEVICE_KEY_4_IN]);
+//       Device_keyboard_EXTI_callback(&devices[DEVICE_KEY_4_IN]);
 //       break;
 //     }
 //     default: {

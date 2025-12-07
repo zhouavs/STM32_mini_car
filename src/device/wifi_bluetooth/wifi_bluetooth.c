@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <limits.h>
+#include <inttypes.h>
 #include "common/delay/delay.h"
 
 /**
@@ -46,7 +46,7 @@ static errno_t create_socket_connection(
   , uint16_t port
 );
 static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_t port);
-static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, const uint8_t *const data_buf, uint32_t data_len);
+static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const data_buf, uint32_t data_len);
 static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const rt_data_ptr, uint32_t *const rt_data_len_ptr, uint32_t data_size);
 
 // 内部方法
@@ -71,7 +71,7 @@ static errno_t match_event_got_ip(wb_string *msg, bool *rt_matched_ptr, Matched_
 // 匹配获取到可以开始发送数据的 > 符号信息
 static errno_t match_socket_send_start(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr);
 // 匹配 +SOCKETREAD:<ConID>,<len>,<data> 中的 +SOCKETREAD:
-static errno_t match_socket_read_start(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr);
+static errno_t match_socket_read_start(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr) __attribute((unused));
 // 新增、删除、查找接口和链接ID关联
 static errno_t port_con_id_relate_add(uint32_t port, uint32_t con_id);
 static errno_t port_con_id_relate_del(uint32_t port);
@@ -164,8 +164,8 @@ static errno_t join_wifi_ap(Device_wifi_bluetooth *const pd, const uint8_t *cons
   err = pd->usart->ops->transmit(pd->usart, cmd.buf, cmd.len);
   if (err) return err;
 
-  uint8_t data_buf[200] = {0};
-  wb_string data = { .buf = data_buf, .len = 0, .size = 200 - 1 };
+  uint8_t data_buf[300] = {0};
+  wb_string data = { .buf = data_buf, .len = 0, .size = 300 - 1 };
   match_fn_t *const match_event_fns[] = { match_event_got_ip, match_error, match_cmd_unknown };
   err = wait_ack(pd, &data, 10000, match_event_fns, sizeof(match_event_fns) / sizeof(match_fn_t *));
   if (err) return err;
@@ -217,7 +217,7 @@ static errno_t create_socket_connection(
   if (err) return err;
 
   match_fn_t *const match_fns[] = { match_ok, match_error, match_cmd_unknown };
-  err = wait_ack(pd, &data, 5000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
+  err = wait_ack(pd, &data, 10000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
   if (err) return err;
 
   const char *pre_str = "connect success ConID=";
@@ -253,7 +253,7 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
   uint8_t cmd_buf[26] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 26 - 1 };
 
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETDEL=%u\r\n", con_id);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETDEL=%" PRIu32 "\r\n", con_id);
 
   if (cmd.len > cmd.size) {
     return EOVERFLOW;
@@ -275,7 +275,7 @@ static errno_t delete_socket_connection(Device_wifi_bluetooth *const pd, uint32_
   return ESUCCESS;
 }
 
-static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, const uint8_t *const data, uint32_t data_len) {
+static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const data, uint32_t data_len) {
   if (pd == NULL || data == NULL || data_len == 0) return EINVAL;
 
   errno_t err = ESUCCESS;
@@ -290,7 +290,7 @@ static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, const
   uint8_t cmd_buf[33] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 33 - 1 };
 
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETSEND=%u,%u\r\n", con_id, data_len);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETSEND=%" PRIu32 ",%" PRIu32 "\r\n", con_id, data_len);
   if (cmd.len > cmd.size) return EOVERFLOW;
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
@@ -326,7 +326,7 @@ static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8
 
   uint8_t cmd_buf[26] = {0};
   wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 26 - 1 };
-  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETREAD=%u\r\n", con_id);
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+SOCKETREAD=%" PRIu32 "\r\n", con_id);
   if (cmd.len > cmd.size) return EOVERFLOW;
 
   err = pd->usart->ops->clear_receive_buf(pd->usart);
@@ -443,6 +443,7 @@ static errno_t wait_ack(
     if (err) return err;
     if (read_len == 0) continue; // 没有新数据时，继续等待
     data_ptr->len += read_len;
+    // data_ptr->buf[data_ptr->len] = 0; // 当前字符后面加上一个终止符, 避免调用库的字符串处理方法时出现问题
 
     bool matched = false;
     Matched_mark mark = MATCHED_MARK_FAIL;
