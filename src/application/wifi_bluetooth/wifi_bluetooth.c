@@ -70,7 +70,7 @@ void wifi_bluetooth_test() {
           goto print_err_tag;
 
         // 新建 socket 链接
-        err = pdw->ops->create_socket_connection(pdw, TCP_CLIENT, (uint8_t *)"192.168.31.109", 9000);
+        err = pdw->ops->create_socket_connection(pdw, TCP_CLIENT, (uint8_t *)"124.156.213.226", 9000);
         if (err)
           goto print_err_tag;
 
