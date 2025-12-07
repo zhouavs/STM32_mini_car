@@ -50,12 +50,16 @@ static errno_t socket_send(Device_wifi_bluetooth *const pd, uint32_t port, uint8
 static errno_t socket_read(Device_wifi_bluetooth *const pd, uint32_t port, uint8_t *const rt_data_ptr, uint32_t *const rt_data_len_ptr, uint32_t data_size);
 
 // 内部方法
+// 复位模组
+static errno_t module_reset(Device_wifi_bluetooth *const pd);
+// 设置工作模式
+static errno_t set_work_mode(Device_wifi_bluetooth *const pd, Device_wifi_bluetooth_work_mode mode, bool save_flash);
 // 配置接收方式
 static errno_t socket_receive_config(Device_wifi_bluetooth *const pd, Device_wifi_bluetooth_socket_receive_mode mode);
 // 等待直到收到特定的响应信息
 static errno_t wait_ack(
   Device_wifi_bluetooth *const pd // wifi 设备
-  , wb_string *rt_data
+  , wb_string *out_data
   , uint32_t timeout_ms // 超时时间
   , match_fn_t *const match_fns[]
   , uint8_t match_fn_count
@@ -72,6 +76,8 @@ static errno_t match_event_got_ip(wb_string *msg, bool *rt_matched_ptr, Matched_
 static errno_t match_socket_send_start(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr);
 // 匹配 +SOCKETREAD:<ConID>,<len>,<data> 中的 +SOCKETREAD:
 static errno_t match_socket_read_start(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr) __attribute((unused));
+// 匹配模块重启后的 ready 提示
+static errno_t match_ready(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr) __attribute((unused));
 // 新增、删除、查找接口和链接ID关联
 static errno_t port_con_id_relate_add(uint32_t port, uint32_t con_id);
 static errno_t port_con_id_relate_del(uint32_t port);
@@ -140,7 +146,70 @@ static errno_t init(Device_wifi_bluetooth *const pd) {
   err = pd->timer->ops->start(pd->timer, DEVICE_TIMER_START_MODE_IT);
   if (err) return err;
 
+  err = module_reset(pd);
+  if (err) return err;
+
+  delay_ms(10);
+
+  err = set_work_mode(pd, WORK_MODE_STA, false);
+  if (err) return err;
+
   err = socket_receive_config(pd, RECEIVE_MODE_PASSIVE);
+  if (err) return err;
+
+  return ESUCCESS;
+}
+
+static errno_t module_reset(Device_wifi_bluetooth *const pd) {
+  if (pd == NULL) return EINVAL;
+
+  errno_t err = ESUCCESS;
+
+  uint8_t rst_cmd[] = "AT+RST\r\n";
+  
+  err = pd->usart->ops->clear_receive_buf(pd->usart);
+  if (err) return err;
+
+  err = pd->usart->ops->transmit(pd->usart, rst_cmd, strlen((char *)rst_cmd));
+  if (err) return err;
+
+  uint8_t data_buf[300] = {0};
+  wb_string data = { .buf = data_buf, .len = 0, .size = 300 - 1 };
+
+  // 等待复位完成(模组会返回 ready)
+  match_fn_t *const match_fns[] = { match_ready, match_error, match_cmd_unknown };
+  err = wait_ack(pd, &data, 5000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
+  if (err) return err;
+
+  // 清除启动信息缓存
+  err = pd->usart->ops->clear_receive_buf(pd->usart);
+  if (err) return err;
+
+  return ESUCCESS;
+}
+
+static errno_t set_work_mode(Device_wifi_bluetooth *const pd, Device_wifi_bluetooth_work_mode mode, bool save_flash) {
+  if (pd == NULL) return EINVAL;
+
+  uint8_t cmd_buf[25] = {0};
+  wb_string cmd = { .buf = cmd_buf, .len = 0, .size = 25 - 1 };
+  cmd.len = snprintf((char *)cmd.buf, cmd.size, "AT+WMODE=%d,%d\r\n", mode, save_flash);
+  if (cmd.len > cmd.size) return EOVERFLOW;
+
+  errno_t err = ESUCCESS;
+
+  err = pd->usart->ops->clear_receive_buf(pd->usart);
+  if (err) return err;
+
+  err = pd->usart->ops->transmit(pd->usart, cmd.buf, cmd.len);
+  if (err) return err;
+
+  // uint8_t data_buf[300] = {0};
+  // wb_string data = { .buf = data_buf, .len = 0, .size = 300 - 1 };
+
+  match_fn_t *const match_fns[] = { match_ok, match_error, match_cmd_unknown };
+  err = wait_ack(pd, NULL, 2000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
+  if (err) return err;
 
   return ESUCCESS;
 }
@@ -164,8 +233,8 @@ static errno_t join_wifi_ap(Device_wifi_bluetooth *const pd, const uint8_t *cons
   err = pd->usart->ops->transmit(pd->usart, cmd.buf, cmd.len);
   if (err) return err;
 
-  uint8_t data_buf[300] = {0};
-  wb_string data = { .buf = data_buf, .len = 0, .size = 300 - 1 };
+  uint8_t data_buf[100] = {0};
+  wb_string data = { .buf = data_buf, .len = 0, .size = 100 - 1 };
   match_fn_t *const match_event_fns[] = { match_event_got_ip, match_error, match_cmd_unknown };
   err = wait_ack(pd, &data, 10000, match_event_fns, sizeof(match_event_fns) / sizeof(match_fn_t *));
   if (err) return err;
@@ -398,8 +467,11 @@ static errno_t socket_receive_config(Device_wifi_bluetooth *const pd, Device_wif
   err = pd->usart->ops->transmit(pd->usart, cmd.buf, cmd.len);
   if (err) return err;
 
+  // uint8_t data_buf[300] = {0};
+  // wb_string data = { .buf = data_buf, .len = 0, .size = 300 - 1 };
+
   match_fn_t *const match_fns[] = { match_ok, match_error, match_cmd_unknown };
-  err = wait_ack(pd, NULL, 1000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
+  err = wait_ack(pd, NULL, 5000, match_fns, sizeof(match_fns) / sizeof(match_fn_t *));
   if (err) return err;
 
   return ESUCCESS;
@@ -592,6 +664,27 @@ static errno_t match_socket_read_start(wb_string *msg, bool *rt_matched_ptr, Mat
 
   *rt_matched_ptr = matched;
 
+  return ESUCCESS;
+}
+
+static errno_t match_ready(wb_string *msg, bool *rt_matched_ptr, Matched_mark *rt_mark_ptr) {
+  // 模组重启后会输出 ready
+  const char *keyword = "ready";
+  const uint8_t keyword_len = strlen(keyword);
+
+  if (msg->len < keyword_len) {
+    *rt_matched_ptr = false;
+    return ESUCCESS;
+  }
+
+  // 仅比较最后几个字符(与 wait_ack 的逐字节追加方式一致)
+  const bool matched = strncmp((char *)msg->buf + msg->len - keyword_len, keyword, keyword_len) == 0;
+
+  if (matched) {
+    *rt_mark_ptr = MATCHED_MARK_SUCCESS;
+  }
+
+  *rt_matched_ptr = matched;
   return ESUCCESS;
 }
 

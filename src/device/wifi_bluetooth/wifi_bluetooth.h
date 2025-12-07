@@ -35,6 +35,13 @@ typedef enum {
   RECEIVE_MODE_ACTIVE = 1,
 } Device_wifi_bluetooth_socket_receive_mode;
 
+typedef enum {
+  WORK_MODE_NO_INIT_OR_CLOSE_WIFI = 0,
+  WORK_MODE_STA = 1,
+  WORK_MODE_AP = 2,
+  WORK_MODE_AP_AND_STA = 3,
+} Device_wifi_bluetooth_work_mode;
+
 struct Device_wifi_bluetooth;
 struct Device_wifi_bluetooth_ops;
 

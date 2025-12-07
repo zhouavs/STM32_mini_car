@@ -15,6 +15,8 @@
 
 static errno_t init(void);
 
+static const line_height = 16;
+
 void wifi_bluetooth_test() {
   #define WIDTH 150
   #define HEIGHT 200
@@ -80,12 +82,14 @@ void wifi_bluetooth_test() {
         uint32_t read_len = 0;
         err = pdw->ops->socket_read(pdw, 9000, read_buf, &read_len, 100);
         if (err) goto print_err_tag;
-        err = pds->ops->set_ascii_str(pds, read_buf, read_len, 0, 0, 0x0000);
+        err = pds->ops->set_ascii_str(pds, read_buf, read_len, line_height * 0, 0, 0x0000);
         if (err) goto print_err_tag;
         err = pds->ops->refresh_window(pds);
         if (err) goto print_err_tag;
 
         step = 2;
+
+        break;
       }
       case 2: {
         Device_key_name key;
@@ -113,7 +117,7 @@ void wifi_bluetooth_test() {
         // 接收消息
         err = pdw->ops->socket_read(pdw, 9000, read_buf, &read_len, 100);
         if (err) goto print_err_tag;
-        err = pds->ops->set_ascii_str(pds, read_buf, read_len, 20, 0, 0x0000);
+        err = pds->ops->set_ascii_str(pds, read_buf, read_len, line_height * 1, 0, 0x0000);
         if (err) goto print_err_tag;
         err = pds->ops->refresh_window(pds);
         if (err) goto print_err_tag;
@@ -128,7 +132,7 @@ void wifi_bluetooth_test() {
         // 接收消息
         err = pdw->ops->socket_read(pdw, 9000, read_buf, &read_len, 100);
         if (err) goto print_err_tag;
-        err = pds->ops->set_ascii_str(pds, read_buf, read_len, 40, 0, 0x0000);
+        err = pds->ops->set_ascii_str(pds, read_buf, read_len, line_height * 2, 0, 0x0000);
         if (err) goto print_err_tag;
         err = pds->ops->refresh_window(pds);
         if (err) goto print_err_tag;
@@ -143,10 +147,12 @@ void wifi_bluetooth_test() {
         // 接收消息
         err = pdw->ops->socket_read(pdw, 9000, read_buf, &read_len, 100);
         if (err) goto print_err_tag;
-        err = pds->ops->set_ascii_str(pds, read_buf, read_len, 80, 0, 0x0000);
+        err = pds->ops->set_ascii_str(pds, read_buf, read_len, line_height * 4, 0, 0x0000);
         if (err) goto print_err_tag;
         err = pds->ops->refresh_window(pds);
         if (err) goto print_err_tag;
+
+        break;
       }
     }
   }
