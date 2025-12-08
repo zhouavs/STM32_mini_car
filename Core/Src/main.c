@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "dma.h"
 #include "i2c.h"
 #include "rtc.h"
@@ -108,6 +109,7 @@ int main(void)
   MX_TIM11_Init();
   MX_USART3_UART_Init();
   MX_TIM13_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   wifi_bluetooth_test();
   /* USER CODE END 2 */
