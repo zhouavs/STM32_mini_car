@@ -15,7 +15,7 @@
 
 static errno_t init(void);
 
-static const line_height = 16;
+static const uint8_t line_height = 16;
 
 void wifi_bluetooth_test() {
   #define WIDTH 150
