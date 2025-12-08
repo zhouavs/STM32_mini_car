@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dac.h"
 #include "dma.h"
 #include "i2c.h"
 #include "rtc.h"
@@ -110,6 +111,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM13_Init();
   MX_ADC1_Init();
+  MX_DAC_Init();
   /* USER CODE BEGIN 2 */
   adc_test();
   /* USER CODE END 2 */
