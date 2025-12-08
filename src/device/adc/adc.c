@@ -52,7 +52,7 @@ static errno_t init(Device_ADC *const pd) {
 }
 
 static errno_t read(Device_ADC *const pd, uint16_t *rt_data, uint32_t len) {
-  if (pd == NULL) return EINVAL;
+  if (pd == NULL || rt_data == NULL || len == 0) return EINVAL;
 
   errno_t err = ESUCCESS;
 
