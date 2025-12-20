@@ -112,6 +112,7 @@ int main(void)
   MX_TIM13_Init();
   MX_ADC1_Init();
   MX_DAC_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   adc_test();
   /* USER CODE END 2 */
