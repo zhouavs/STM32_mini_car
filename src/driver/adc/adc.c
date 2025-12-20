@@ -56,6 +56,7 @@ errno_t Driver_ADC_get_ops(const Driver_ADC_ops **po_ptr) {
 }
 
 static errno_t config_channel(const Device_ADC *const pd, const Device_ADC_channel_config *const config) {
+  if (pd == NULL || config == NULL) return EINVAL;
   ADC_ChannelConfTypeDef hal_config = {
     .Channel = relate_channel[config->channel],
     .SamplingTime = relate_sampling[config->sampling_time],
@@ -67,26 +68,30 @@ static errno_t config_channel(const Device_ADC *const pd, const Device_ADC_chann
 }
 
 static errno_t start(const Device_ADC *const pd) {
+  if (pd == NULL) return EINVAL;
   HAL_StatusTypeDef status = HAL_ADC_Start((ADC_HandleTypeDef *)pd->instance);
   if (status != HAL_OK) return EINTR;
+  return ESUCCESS;
 }
 
 static errno_t stop(const Device_ADC *const pd) {
+  if (pd == NULL) return EINVAL;
   HAL_StatusTypeDef status = HAL_ADC_Stop((ADC_HandleTypeDef *)pd->instance);
   if (status != HAL_OK) return EINTR;
   return ESUCCESS;
 }
 
 static errno_t poll(const Device_ADC *const pd, uint32_t timeout_ms) {
+  if (pd == NULL) return EINVAL;
   HAL_StatusTypeDef status = HAL_ADC_PollForConversion((ADC_HandleTypeDef *)pd->instance, timeout_ms);
   if (status != HAL_OK) return EINTR;
   return ESUCCESS;
 }
 
 static errno_t get_value(const Device_ADC *const pd, uint16_t *rt_value) {
-  if (rt_value == NULL) return EINVAL;
-  uint32_t value = HAL_ADC_GetValue((ADC_HandleTypeDef *)pd->instance);
-  *rt_value = (uint16_t)value;
+  if (pd == NULL || rt_value == NULL) return EINVAL;
+  uint16_t value = (uint16_t)HAL_ADC_GetValue((ADC_HandleTypeDef *)pd->instance);
+  *rt_value = value;
   return ESUCCESS;
 }
 
