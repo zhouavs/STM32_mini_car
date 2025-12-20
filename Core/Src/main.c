@@ -27,6 +27,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -113,6 +114,7 @@ int main(void)
   MX_ADC1_Init();
   MX_DAC_Init();
   MX_TIM4_Init();
+  MX_FSMC_Init();
   /* USER CODE BEGIN 2 */
   dac_test();
   /* USER CODE END 2 */
