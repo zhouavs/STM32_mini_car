@@ -30,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/adc/adc.h"
+#include "src/application/dac/dac.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -114,7 +114,7 @@ int main(void)
   MX_DAC_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  adc_test();
+  dac_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */

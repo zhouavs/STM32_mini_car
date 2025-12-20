@@ -164,9 +164,9 @@ static errno_t set_time_for_count_incr(const Device_timer *const pd, uint32_t us
 
   const uint32_t psc = frequent / div;
 
-  if (psc == 0) return EINVAL;
+  if (psc == 0 || psc > 0x10000) return EINVAL;
 
-  err = driver_ops->set_prescaler(pd, psc - 1);
+  err = driver_ops->set_prescaler(pd, (uint16_t)(psc - 1));
   if (err) return err;
 
   return ESUCCESS;
