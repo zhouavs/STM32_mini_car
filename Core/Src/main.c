@@ -31,7 +31,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "src/application/dac/dac.h"
+#include "src/application/fmc/fmc.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -116,7 +116,7 @@ int main(void)
   MX_TIM4_Init();
   MX_FSMC_Init();
   /* USER CODE BEGIN 2 */
-  dac_test();
+  fmc_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
