@@ -56,7 +56,7 @@ void fmc_test() {
   if (err) goto print_err_tag;
   err = pdd->ops->init(pdd);
   if (err) goto print_err_tag;
-  err = pdd->ops->set_wave(pdd, points, POINT_COUNT, 20000);
+  err = pdd->ops->set_wave(pdd, points, POINT_COUNT, 50000);
   if (err) goto print_err_tag;
 
   uint8_t str[50] = {0};
