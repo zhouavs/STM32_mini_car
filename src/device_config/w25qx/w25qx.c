@@ -17,7 +17,7 @@ static const Device_SPI_name relate_spi[DEVICE_W25QX_COUNT] = {
   [DEVICE_W25Q64] = DEVICE_SPI_1,
 };
 
-errno_t Device_config_W25QX_register_all_device(void) {
+errno_t Device_config_W25QX_register(void) {
   errno_t err = Device_W25QX_module_init();
   if (err) return err;
   

@@ -15,7 +15,7 @@ static const Device_timer_name relate_timer[DEVICE_DAC_COUNT] = {
   [DEVICE_DAC_LIGHT] = DEVICE_TIMER_TIM4,
 };
 
-errno_t Device_config_DAC_register_all_device(void) {
+errno_t Device_config_DAC_register(void) {
   errno_t err = Device_DAC_module_init();
   if (err) return err;
 

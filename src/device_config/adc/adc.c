@@ -18,7 +18,7 @@ static Device_ADC devices[DEVICE_ADC_COUNT] = {
   },
 };
 
-errno_t Device_config_ADC_register_all_device(void) {
+errno_t Device_config_ADC_register(void) {
   errno_t err = Device_ADC_module_init();
   if (err) return err;
 

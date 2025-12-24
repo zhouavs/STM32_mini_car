@@ -3,4 +3,4 @@
 #include "common/errno/errno.h"
 #include "device/wifi_bluetooth/wifi_bluetooth.h"
 
-errno_t Device_config_wifi_bluetooth_register_all_device(void);
+errno_t Device_config_wifi_bluetooth_register(void);

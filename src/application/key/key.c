@@ -22,7 +22,7 @@ void key_test(void) {
   errno_t err = Device_GPIO_module_init();
   if (err) return;
 
-  err = Device_config_GPIO_register_all_device();
+  err = Device_config_GPIO_register();
   if (err) return;
 
   Device_GPIO *pk = NULL;

@@ -32,7 +32,7 @@ static const Device_SPI_name relate_spi[DEVICE_ST7789V2_COUNT] = {
   [DEVICE_ST7789V2_1] = DEVICE_SPI_1,
 };
 
-errno_t Device_config_ST7789V2_register_all_device(void) {
+errno_t Device_config_ST7789V2_register(void) {
   errno_t err = Device_ST7789V2_module_init();
   if (err) return err;
   

@@ -36,7 +36,7 @@ static Device_PWM devices[DEVICE_PWM_COUNT] = {
   },
 };
 
-errno_t Device_config_PWM_register_all_device(void) {
+errno_t Device_config_PWM_register(void) {
   errno_t err = Device_PWM_module_init();
   if (err) return err;
   

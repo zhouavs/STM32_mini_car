@@ -34,7 +34,7 @@ static void (*const callbacks[DEVICE_KEY_COUNT])(void) = {
   [DEVICE_KEY_4] = key_4_callback,
 };
 
-errno_t Device_config_keyboard_register_all_device(void) {
+errno_t Device_config_keyboard_register(void) {
   errno_t err = Device_keyboard_module_init();
   if (err) return err;
   

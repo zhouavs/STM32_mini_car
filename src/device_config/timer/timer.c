@@ -46,7 +46,7 @@ static Device_timer devices[DEVICE_TIMER_COUNT] = {
   },
 };
 
-errno_t Device_config_timer_register_all_device(void) {
+errno_t Device_config_timer_register(void) {
   errno_t err = Device_timer_module_init();
   if (err) return err;
   

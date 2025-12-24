@@ -70,61 +70,61 @@ static errno_t init(void) {
   err = Device_USART_module_init();
   if (err) return err;
 
-  err = Device_config_USART_register_all_device();
+  err = Device_config_USART_register();
   if (err) return err;
 
   err = Device_GPIO_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_GPIO_register_all_device();
+  err = Device_config_GPIO_register();
   if (err) goto print_err_tag;
 
   err = Device_SPI_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_SPI_register_all_device();
+  err = Device_config_SPI_register();
   if (err) goto print_err_tag;
 
   err = Device_W25QX_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_W25QX_register_all_device();
+  err = Device_config_W25QX_register();
   if (err) goto print_err_tag;
 
   err = Device_ST7789V2_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_ST7789V2_register_all_device();
+  err = Device_config_ST7789V2_register();
   if (err) goto print_err_tag;
 
   err = Device_I2C_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_I2C_register_all_device();
+  err = Device_config_I2C_register();
   if (err) goto print_err_tag;
 
   err = Device_AT24C02_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_AT24C02_register_all_device();
+  err = Device_config_AT24C02_register();
   if (err) goto print_err_tag;
 
   err = Device_timer_module_init();
   if (err) goto print_err_tag;
   
-  err = Device_config_timer_register_all_device();
+  err = Device_config_timer_register();
   if (err) goto print_err_tag;
   
   err = Device_PWM_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_PWM_register_all_device();
+  err = Device_config_PWM_register();
   if (err) goto print_err_tag;
   
   err = Device_motor_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_motor_register_all_device();
+  err = Device_config_motor_register();
   if (err) goto print_err_tag;
 
   return ESUCCESS;

@@ -61,31 +61,31 @@ static errno_t init(void) {
   err = Device_USART_module_init();
   if (err) return err;
 
-  err = Device_config_USART_register_all_device();
+  err = Device_config_USART_register();
   if (err) return err;
 
   err = Device_GPIO_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_GPIO_register_all_device();
+  err = Device_config_GPIO_register();
   if (err) goto print_err_tag;
 
   err = Device_SPI_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_SPI_register_all_device();
+  err = Device_config_SPI_register();
   if (err) goto print_err_tag;
 
   err = Device_W25QX_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_W25QX_register_all_device();
+  err = Device_config_W25QX_register();
   if (err) goto print_err_tag;
 
   err = Device_ST7789V2_module_init();
   if (err) goto print_err_tag;
 
-  err = Device_config_ST7789V2_register_all_device();
+  err = Device_config_ST7789V2_register();
   if (err) goto print_err_tag;
 
   return ESUCCESS;

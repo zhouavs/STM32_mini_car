@@ -12,7 +12,7 @@ static const Device_GPIO_name relate_ins[DEVICE_TRACKER_COUNT][DEVICE_TRACKER_IN
   [DEVICE_TRACKER_1] = {DEVICE_TRACKER_IN_1, DEVICE_TRACKER_IN_2, DEVICE_TRACKER_IN_3, DEVICE_TRACKER_IN_4, DEVICE_TRACKER_IN_5, DEVICE_TRACKER_IN_6, DEVICE_TRACKER_IN_7},
 };
 
-errno_t Device_config_tracker_register_all_device(void) {
+errno_t Device_config_tracker_register(void) {
   errno_t err = Device_tracker_module_init();
   if (err) return err;
   

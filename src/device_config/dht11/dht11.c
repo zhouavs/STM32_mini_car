@@ -17,7 +17,7 @@ static const Device_timer_name relate_timer[DEVICE_DHT11_COUNT] = {
   [DEVICE_DHT11_1] = DEVICE_TIMER_TIM10,
 };
 
-errno_t Device_config_DHT11_register_all_device(void) {
+errno_t Device_config_DHT11_register(void) {
   errno_t err = Device_DHT11_module_init();
   if (err) return err;
   

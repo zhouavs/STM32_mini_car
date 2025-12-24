@@ -16,7 +16,7 @@ static Device_USART devices[DEVICE_USART_COUNT] = {
   },
 };
 
-errno_t Device_config_USART_register_all_device(void) {
+errno_t Device_config_USART_register(void) {
   errno_t err = Device_USART_module_init();
   if (err) return err;
   

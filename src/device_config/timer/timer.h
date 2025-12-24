@@ -3,4 +3,4 @@
 #include "common/errno/errno.h"
 #include "device/timer/timer.h"
 
-errno_t Device_config_timer_register_all_device(void);
+errno_t Device_config_timer_register(void);

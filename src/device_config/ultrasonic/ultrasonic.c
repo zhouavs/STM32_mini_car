@@ -21,7 +21,7 @@ static const Device_timer_name relate_timer[DEVICE_ULTRASONIC_COUNT] = {
   [DEVICE_ULTRASONIC_1] = DEVICE_TIMER_TIM11,
 };
 
-errno_t Device_config_ultrasonic_register_all_device(void) {
+errno_t Device_config_ultrasonic_register(void) {
   errno_t err = Device_ultrasonic_module_init();
   if (err) return err;
   

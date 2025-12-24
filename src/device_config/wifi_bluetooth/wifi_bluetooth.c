@@ -18,7 +18,7 @@ static const Device_timer_name relate_timer[DEVICE_WIFI_BLUETOOTH_COUNT] = {
 };
 
 
-errno_t Device_config_wifi_bluetooth_register_all_device(void) {
+errno_t Device_config_wifi_bluetooth_register(void) {
   errno_t err = Device_wifi_bluetooth_module_init();
   if (err) return err;
 

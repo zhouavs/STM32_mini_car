@@ -196,7 +196,7 @@ static Device_GPIO devices[DEVICE_GPIO_COUNT] = {
   },
 };
 
-errno_t Device_config_GPIO_register_all_device(void) {
+errno_t Device_config_GPIO_register(void) {
   errno_t err = Device_GPIO_module_init();
   if (err) return err;
   

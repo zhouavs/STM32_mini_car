@@ -10,7 +10,7 @@ static Device_SPI devices[DEVICE_SPI_COUNT] = {
   },
 };
 
-errno_t Device_config_SPI_register_all_device(void) {
+errno_t Device_config_SPI_register(void) {
   errno_t err = Device_SPI_module_init();
   if (err) return err;
   

@@ -10,7 +10,7 @@ static Device_I2C devices[DEVICE_I2C_COUNT] = {
   },
 };
 
-errno_t Device_config_I2C_register_all_device(void) {
+errno_t Device_config_I2C_register(void) {
   errno_t err = Device_I2C_module_init();
   if (err) return err;
 

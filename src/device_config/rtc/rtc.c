@@ -10,7 +10,7 @@ static Device_RTC devices[DEVICE_RTC_COUNT] = {
   },
 };
 
-errno_t Device_config_RTC_register_all_device(void) {
+errno_t Device_config_RTC_register(void) {
   errno_t err = Device_RTC_module_init();
   if (err) return err;
   

@@ -167,25 +167,25 @@ void wifi_bluetooth_test() {
 static errno_t init(void) {
   errno_t err = ESUCCESS;
 
-  err = Device_config_GPIO_register_all_device();
+  err = Device_config_GPIO_register();
   if (err) goto print_err_tag;
 
-  err = Device_config_USART_register_all_device();
+  err = Device_config_USART_register();
   if (err) return err;
 
-  err = Device_config_timer_register_all_device();
+  err = Device_config_timer_register();
   if (err) goto print_err_tag;
 
-  err = Device_config_SPI_register_all_device();
+  err = Device_config_SPI_register();
   if (err) goto print_err_tag;
 
-  err = Device_config_ST7789V2_register_all_device();
+  err = Device_config_ST7789V2_register();
   if (err) goto print_err_tag;
   
-  err = Device_config_wifi_bluetooth_register_all_device();
+  err = Device_config_wifi_bluetooth_register();
   if (err) goto print_err_tag;
 
-  err = Device_config_keyboard_register_all_device();
+  err = Device_config_keyboard_register();
   if (err) goto print_err_tag;
 
   return ESUCCESS;

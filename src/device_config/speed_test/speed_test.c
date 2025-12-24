@@ -45,7 +45,7 @@ static void (*const callbacks[DEVICE_SPEED_TEST_COUNT])(void) = {
   [DEVICE_SPEED_TEST_TAIL_RIGHT] = in_tail_right_callback,
 };
 
-errno_t Device_config_speed_test_register_all_device(void) {
+errno_t Device_config_speed_test_register(void) {
   errno_t err = Device_speed_test_module_init();
   if (err) return err;
   

@@ -17,7 +17,7 @@ static const Device_I2C_name relate_i2c[DEVICE_AT24C02_COUNT] = {
   [DEVICE_AT24C02_1] = DEVICE_I2C_1,
 };
 
-errno_t Device_config_AT24C02_register_all_device(void) {
+errno_t Device_config_AT24C02_register(void) {
   errno_t err = Device_AT24C02_module_init();
   if (err) return err;
   

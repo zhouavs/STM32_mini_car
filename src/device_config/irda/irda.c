@@ -23,7 +23,7 @@ static void (*const relate_callbacks[DEVICE_IRDA_COUNT])(void) = {
   [DEVICE_IRDA_1] = in_callback,
 };
 
-errno_t Device_config_IRDA_register_all_device(void) {
+errno_t Device_config_IRDA_register(void) {
   errno_t err = Device_IRDA_module_init();
   if (err) return err;
   

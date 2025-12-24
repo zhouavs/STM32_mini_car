@@ -14,13 +14,13 @@ void gpio_test(void) {
 
   errno_t err = ESUCCESS;
 
-  err = Device_config_GPIO_register_all_device();
+  err = Device_config_GPIO_register();
   if (err) goto err_flag;
 
-  err = Device_config_keyboard_register_all_device();
+  err = Device_config_keyboard_register();
   if (err) goto err_flag;
 
-  err = Device_config_timer_register_all_device();
+  err = Device_config_timer_register();
   if (err) goto err_flag;
 
   for (uint8_t i = 0; i < led_count; ++i) {

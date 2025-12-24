@@ -74,31 +74,31 @@ void tracker_test(void) {
 static errno_t init(void) {
   errno_t err = ESUCCESS;
 
-  err = Device_config_GPIO_register_all_device();
+  err = Device_config_GPIO_register();
   if (err) return err;
   
-  err = Device_config_USART_register_all_device();
+  err = Device_config_USART_register();
   if (err) return err;
   
-  err = Device_config_timer_register_all_device();
+  err = Device_config_timer_register();
   if (err) return err;
   
-  err = Device_config_PWM_register_all_device();
+  err = Device_config_PWM_register();
   if (err) return err;
   
-  err = Device_config_SPI_register_all_device();
+  err = Device_config_SPI_register();
   if (err) return err;
   
-  err = Device_config_ST7789V2_register_all_device();
+  err = Device_config_ST7789V2_register();
   if (err) return err;
   
-  err = Device_config_motor_register_all_device();
+  err = Device_config_motor_register();
   if (err) return err;
   
-  err = Device_config_speed_test_register_all_device();
+  err = Device_config_speed_test_register();
   if (err) return err;
   
-  err = Device_config_tracker_register_all_device();
+  err = Device_config_tracker_register();
   if (err) return err;
 
   return ESUCCESS;

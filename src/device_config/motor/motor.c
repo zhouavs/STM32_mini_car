@@ -45,7 +45,7 @@ static const Device_PWM_name relate_pwm[DEVICE_MOTOR_COUNT] = {
   [DEVICE_MOTOR_TAIL_RIGHT] = DEVICE_PWM_TIM_8_CH_4,
 };
 
-errno_t Device_config_motor_register_all_device(void) {
+errno_t Device_config_motor_register(void) {
   errno_t err = Device_motor_module_init();
   if (err) return err;
 

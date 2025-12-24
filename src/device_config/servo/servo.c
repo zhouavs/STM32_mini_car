@@ -14,7 +14,7 @@ static const Device_PWM_name relate_pwm[DEVICE_SERVO_COUNT] = {
   [DEVICE_SERVO_1] = DEVICE_PWM_TIM_3_CH_3,
 };
 
-errno_t Device_config_servo_register_all_device(void) {
+errno_t Device_config_servo_register(void) {
   errno_t err = Device_servo_module_init();
   if (err) return err;
   

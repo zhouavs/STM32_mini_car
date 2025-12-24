@@ -8,7 +8,7 @@ void usart_test(void) {
   errno_t err = Device_USART_module_init();
   if (err) return;
 
-  err = Device_config_USART_register_all_device();
+  err = Device_config_USART_register();
   if (err) return;
 
   Device_USART *pdu = NULL;
